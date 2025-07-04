@@ -11,6 +11,16 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		893CC0192E115F09009BDD70 /* fa-brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 893CC0152E115F09009BDD70 /* fa-brands.ttf */; };
+		893CC01A2E115F09009BDD70 /* fa-light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 893CC0162E115F09009BDD70 /* fa-light.ttf */; };
+		893CC01B2E115F09009BDD70 /* fa-regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 893CC0172E115F09009BDD70 /* fa-regular.ttf */; };
+		893CC01C2E115F09009BDD70 /* fa-solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 893CC0182E115F09009BDD70 /* fa-solid.ttf */; };
+		895161552DF07B1B0070DE19 /* NunitoSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 895161542DF07B1B0070DE19 /* NunitoSans-SemiBold.ttf */; };
+		895161562DF07B1B0070DE19 /* NunitoSans-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 895161512DF07B1B0070DE19 /* NunitoSans-ExtraLight.ttf */; };
+		895161572DF07B1B0070DE19 /* NunitoSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 895161532DF07B1B0070DE19 /* NunitoSans-Regular.ttf */; };
+		895161582DF07B1B0070DE19 /* NunitoSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8951614F2DF07B1B0070DE19 /* NunitoSans-Bold.ttf */; };
+		895161592DF07B1B0070DE19 /* NunitoSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 895161502DF07B1B0070DE19 /* NunitoSans-ExtraBold.ttf */; };
+		8951615A2DF07B1B0070DE19 /* NunitoSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 895161522DF07B1B0070DE19 /* NunitoSans-Light.ttf */; };
 		EC836E9B3640BD501AD0E219 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -24,6 +34,16 @@
 		5DCACB8F33CDC322A6C60F78 /* libPods-gcmobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-gcmobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = gcmobile/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = gcmobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		893CC0152E115F09009BDD70 /* fa-brands.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fa-brands.ttf"; sourceTree = "<group>"; };
+		893CC0162E115F09009BDD70 /* fa-light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fa-light.ttf"; sourceTree = "<group>"; };
+		893CC0172E115F09009BDD70 /* fa-regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fa-regular.ttf"; sourceTree = "<group>"; };
+		893CC0182E115F09009BDD70 /* fa-solid.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fa-solid.ttf"; sourceTree = "<group>"; };
+		8951614F2DF07B1B0070DE19 /* NunitoSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NunitoSans-Bold.ttf"; sourceTree = "<group>"; };
+		895161502DF07B1B0070DE19 /* NunitoSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NunitoSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		895161512DF07B1B0070DE19 /* NunitoSans-ExtraLight.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NunitoSans-ExtraLight.ttf"; sourceTree = "<group>"; };
+		895161522DF07B1B0070DE19 /* NunitoSans-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NunitoSans-Light.ttf"; sourceTree = "<group>"; };
+		895161532DF07B1B0070DE19 /* NunitoSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NunitoSans-Regular.ttf"; sourceTree = "<group>"; };
+		895161542DF07B1B0070DE19 /* NunitoSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NunitoSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -70,6 +90,16 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				893CC0152E115F09009BDD70 /* fa-brands.ttf */,
+				893CC0162E115F09009BDD70 /* fa-light.ttf */,
+				893CC0172E115F09009BDD70 /* fa-regular.ttf */,
+				893CC0182E115F09009BDD70 /* fa-solid.ttf */,
+				8951614F2DF07B1B0070DE19 /* NunitoSans-Bold.ttf */,
+				895161502DF07B1B0070DE19 /* NunitoSans-ExtraBold.ttf */,
+				895161512DF07B1B0070DE19 /* NunitoSans-ExtraLight.ttf */,
+				895161522DF07B1B0070DE19 /* NunitoSans-Light.ttf */,
+				895161532DF07B1B0070DE19 /* NunitoSans-Regular.ttf */,
+				895161542DF07B1B0070DE19 /* NunitoSans-SemiBold.ttf */,
 				13B07FAE1A68108700A75B9A /* gcmobile */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
@@ -160,6 +190,16 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				893CC0192E115F09009BDD70 /* fa-brands.ttf in Resources */,
+				893CC01A2E115F09009BDD70 /* fa-light.ttf in Resources */,
+				893CC01B2E115F09009BDD70 /* fa-regular.ttf in Resources */,
+				893CC01C2E115F09009BDD70 /* fa-solid.ttf in Resources */,
+				895161552DF07B1B0070DE19 /* NunitoSans-SemiBold.ttf in Resources */,
+				895161562DF07B1B0070DE19 /* NunitoSans-ExtraLight.ttf in Resources */,
+				895161572DF07B1B0070DE19 /* NunitoSans-Regular.ttf in Resources */,
+				895161582DF07B1B0070DE19 /* NunitoSans-Bold.ttf in Resources */,
+				895161592DF07B1B0070DE19 /* NunitoSans-ExtraBold.ttf in Resources */,
+				8951615A2DF07B1B0070DE19 /* NunitoSans-Light.ttf in Resources */,
 				EC836E9B3640BD501AD0E219 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -260,6 +300,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5RR4ZRBSV6;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = gcmobile/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -288,6 +329,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5RR4ZRBSV6;
 				INFOPLIST_FILE = gcmobile/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
