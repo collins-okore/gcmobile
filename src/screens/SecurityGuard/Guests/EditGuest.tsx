@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -6,35 +6,102 @@ import {
   ScrollView,
   StatusBar,
   Text,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ArrowLeftIcon} from 'react-native-heroicons/outline';
-import {useNavigation} from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from '@react-navigation/native';
+import {Toast} from 'toastify-react-native';
+import securityGuardGuestService, {
+  SecurityGuardGuest,
+} from '../../../services/securityGuardGuestService';
 import colors from '../../../themes/colors';
 import fonts from '../../../themes/fonts';
 import TextInput from '../../../components/Common/Textinput/index';
 import DropdownInput from '../../../components/Common/DropdownInput/index';
 import DateTimeInput from '../../../components/Common/DateTimeInput/index';
 import Button from '../../../components/Common/Button/index';
+import PhoneInput from '../../../components/Common/PhoneInput/index';
 
 const EditGuest = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const {guestId} = route.params as {guestId: string};
 
-  // Pre-populate with existing guest data (in real app, this would come from route params or API)
+  const [guest, setGuest] = useState<SecurityGuardGuest | null>(null);
   const [formData, setFormData] = useState({
-    fullName: 'John Smith',
-    idNumber: 'ID123456789',
-    phone: '+1 234 567 8900',
-    purpose: 'business',
+    fullName: '',
+    idNumber: '',
+    phone: '',
+    phone_country_code: 'KE', // Default to Kenya country code
+    phone_calling_code: '+254', // Default to Kenya calling code
+    purpose: '',
     arrivalTime: new Date(),
-    vehicleLicensePlate: 'ABC-123',
-    vehicleMake: 'Toyota',
-    vehicleModel: 'Camry',
+    vehicleLicensePlate: '',
   });
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // Fetch guest data
+  const fetchGuest = useCallback(async () => {
+    try {
+      setIsFetching(true);
+      setFetchError(null);
+
+      const response = await securityGuardGuestService.getGuestById(guestId, {
+        populate: ['resident.user', 'estate'],
+        pagination: {
+          page: 1,
+          pageSize: 1,
+        },
+      });
+
+      const guestData = response;
+      setGuest(guestData);
+
+      // Pre-populate form with existing data
+      setFormData({
+        fullName: guestData.name || '',
+        idNumber: guestData.id_number || '',
+        phone: guestData.phone || '',
+        phone_country_code: 'KE', // Default fallback
+        phone_calling_code: '+254', // Default fallback
+        purpose: guestData.purpose || '',
+        arrivalTime: guestData.arrival_time
+          ? new Date(guestData.arrival_time)
+          : new Date(),
+        vehicleLicensePlate: guestData.vehicle_license_plate || '',
+      });
+    } catch (err: any) {
+      console.error('Error fetching guest:', err);
+      setFetchError('Failed to load guest details. Please try again.');
+    } finally {
+      setIsFetching(false);
+    }
+  }, [guestId]);
+
+  // Fetch guest data on component mount
+  useEffect(() => {
+    if (guestId) {
+      fetchGuest();
+    }
+  }, [guestId, fetchGuest]);
+
+  // Auto-refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (guestId) {
+        fetchGuest();
+      }
+    }, [guestId, fetchGuest]),
+  );
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -46,6 +113,29 @@ const EditGuest = () => {
     if (errors[field]) {
       setErrors(prev => ({...prev, [field]: ''}));
     }
+  };
+
+  const handlePhoneChange = (phone: string) => {
+    setFormData(prev => ({...prev, phone}));
+
+    // Clear phone error when user starts typing
+    if (errors.phone) {
+      setErrors(prev => ({...prev, phone: ''}));
+    }
+  };
+
+  const handleCallingCodeChange = (callingCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      phone_calling_code: `+${callingCode}`,
+    }));
+  };
+
+  const handleCountryCodeChange = (countryCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      phone_country_code: countryCode,
+    }));
   };
 
   const validateForm = (): boolean => {
@@ -61,8 +151,12 @@ const EditGuest = () => {
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    } else {
+      // Validate local phone number (without country code)
+      const cleanPhone = formData.phone.replace(/[\s\-\(\)]/g, '');
+      if (!/^[0-9]{8,12}$/.test(cleanPhone)) {
+        newErrors.phone = 'Please enter a valid phone number (8-12 digits)';
+      }
     }
 
     if (!formData.purpose.trim()) {
@@ -81,39 +175,132 @@ const EditGuest = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Prepare data for API
+      const updateData = {
+        name: formData.fullName.trim(),
+        ...(formData.phone.trim() && {
+          phone: formData.phone.trim(),
+        }),
+        id_number: formData.idNumber.trim(),
+        purpose: formData.purpose,
+        arrival_time: formData.arrivalTime.toISOString(),
+        ...(formData.vehicleLicensePlate.trim() && {
+          vehicle_license_plate: formData.vehicleLicensePlate.trim(),
+        }),
+      };
 
-      Alert.alert(
-        'Guest Updated',
-        'Guest information has been successfully updated.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ],
-      );
-    } catch (error) {
-      Alert.alert(
-        'Error',
-        'Failed to update guest information. Please try again.',
-        [{text: 'OK'}],
-      );
+      await securityGuardGuestService.updateGuest(guestId, updateData);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Guest Updated Successfully!',
+        text2: `${formData.fullName}'s information has been updated`,
+        position: 'top',
+        visibilityTime: 3000,
+      });
+
+      // Navigate back after a short delay to show the toast
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error updating guest:', error);
+
+      let errorMessage =
+        'Failed to update guest information. Please try again.';
+
+      if (error.response) {
+        if (error.response.status === 422) {
+          // Validation errors
+          if (error.response.data?.message) {
+            errorMessage = error.response.data.message;
+          } else if (error.response.data?.errors) {
+            // Handle validation errors object
+            const errors = error.response.data.errors;
+            const firstError = Object.values(errors)[0];
+            if (Array.isArray(firstError) && firstError.length > 0) {
+              errorMessage = firstError[0];
+            }
+          }
+        } else if (error.response.status === 404) {
+          errorMessage = 'Guest not found. It may have been deleted.';
+        } else if (error.response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.request) {
+        errorMessage =
+          'Network error. Please check your connection and try again.';
+      }
+
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Update Guest',
+        text2: errorMessage,
+        position: 'top',
+        visibilityTime: 4000,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const purposeOptions = [
-    {label: 'Business Meeting', value: 'business'},
-    {label: 'Personal Visit', value: 'personal'},
-    {label: 'Delivery', value: 'delivery'},
-    {label: 'Maintenance', value: 'maintenance'},
-    {label: 'Guest/Friend', value: 'guest'},
-    {label: 'Family Visit', value: 'family'},
-    {label: 'Other', value: 'other'},
+    {label: 'Business Meeting', value: 'Business Meeting'},
+    {label: 'Personal Visit', value: 'Personal Visit'},
+    {label: 'Delivery', value: 'Delivery'},
+    {label: 'Maintenance', value: 'Maintenance'},
+    {label: 'Guest/Friend', value: 'Guest/Friend'},
+    {label: 'Family Visit', value: 'Family Visit'},
+    {label: 'Other', value: 'Other Visit'},
   ];
+
+  // Show loading screen while fetching guest data
+  if (isFetching) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}>
+              <ArrowLeftIcon size={24} color={colors.darkFont} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Edit Guest</Text>
+          </View>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Loading guest details...</Text>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
+  // Show error screen if fetching failed
+  if (fetchError) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}>
+              <ArrowLeftIcon size={24} color={colors.darkFont} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Edit Guest</Text>
+          </View>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{fetchError}</Text>
+            <Button title="Try Again" onPress={fetchGuest} />
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
@@ -132,7 +319,7 @@ const EditGuest = () => {
             </TouchableOpacity>
             <Text style={styles.title}>Edit Guest</Text>
             <Text style={styles.subtitle}>
-              Update the guest's information below.
+              Update {guest?.name || 'the guest'}'s information below.
             </Text>
           </View>
 
@@ -162,15 +349,18 @@ const EditGuest = () => {
                 testID="id-number-input"
               />
 
-              <TextInput
+              <PhoneInput
                 label="Phone Number"
                 placeholder="Enter phone number"
                 value={formData.phone}
-                onChangeText={handleInputChange('phone')}
-                mode="phone"
+                onChangeText={handlePhoneChange}
+                onChangeCallingCode={handleCallingCodeChange}
+                onChangeCountryCode={handleCountryCodeChange}
+                defaultCode={formData.phone_country_code || 'KE'}
                 error={errors.phone}
                 required
                 testID="phone-input"
+                key={formData.phone_calling_code}
               />
             </View>
 
@@ -211,22 +401,6 @@ const EditGuest = () => {
                 value={formData.vehicleLicensePlate}
                 onChangeText={handleInputChange('vehicleLicensePlate')}
                 testID="license-plate-input"
-              />
-
-              <TextInput
-                label="Vehicle Make"
-                placeholder="e.g., Toyota, BMW, Honda"
-                value={formData.vehicleMake}
-                onChangeText={handleInputChange('vehicleMake')}
-                testID="vehicle-make-input"
-              />
-
-              <TextInput
-                label="Vehicle Model"
-                placeholder="e.g., Camry, X5, Civic"
-                value={formData.vehicleModel}
-                onChangeText={handleInputChange('vehicleModel')}
-                testID="vehicle-model-input"
               />
             </View>
 
@@ -326,6 +500,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     backgroundColor: colors.whiteBg,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: fonts.regular,
+    color: colors.grayFont,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    fontFamily: fonts.regular,
+    color: '#FF6B6B',
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 

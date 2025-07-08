@@ -1,9 +1,9 @@
-import apiClient from "./apiClient";
+import apiClient from './apiClient';
 import {
   SECURITY_GUARD_GUEST_URLS,
   SECURITY_GUARD_RESIDENT_URLS,
-} from "./apiUrls";
-import qs from "qs";
+} from './apiUrls';
+import qs from 'qs';
 
 export interface SecurityGuardGuest {
   id: string;
@@ -14,7 +14,7 @@ export interface SecurityGuardGuest {
   purpose: string;
   arrival_time: string;
   departure_time?: string;
-  status: "pending" | "arrived" | "departed" | "cancelled";
+  status: 'pending' | 'arrived' | 'departed' | 'cancelled';
   resident?: {
     id: string;
     user: {
@@ -47,7 +47,7 @@ export interface PaginationParams {
     page?: number;
     pageSize?: number;
   };
-  sort?: string | string[];
+  sort?: string | string[] | object;
   populate?: string | string[] | object;
   filters?: any;
 }
@@ -55,7 +55,7 @@ export interface PaginationParams {
 // Get all estate manager guests with pagination, search and filtering
 const getAllGuests = async (params?: PaginationParams) => {
   // Convert the params object to a query string compatible with Strapi v4
-  let queryString = "";
+  let queryString = '';
 
   if (params) {
     queryString = qs.stringify(params, {
@@ -66,22 +66,22 @@ const getAllGuests = async (params?: PaginationParams) => {
   try {
     const response = await apiClient.get(
       `${SECURITY_GUARD_GUEST_URLS.GET_ALL}${
-        queryString ? `?${queryString}` : ""
-      }`
+        queryString ? `?${queryString}` : ''
+      }`,
     );
     return {
       data: response.data.data as SecurityGuardGuest[],
       meta: response.data.meta.pagination as PaginationMeta,
     };
   } catch (error) {
-    console.error("Error fetching estate manager guests:", error);
+    console.error('Error fetching estate manager guests:', error);
     throw error;
   }
 };
 
 // Get estate manager guest by ID
 const getGuestById = async (id: string, params?: PaginationParams) => {
-  let queryString = "";
+  let queryString = '';
 
   if (params) {
     queryString = qs.stringify(params, {
@@ -92,8 +92,8 @@ const getGuestById = async (id: string, params?: PaginationParams) => {
   try {
     const response = await apiClient.get(
       `${SECURITY_GUARD_GUEST_URLS.GET_ONE(id)}${
-        queryString ? `?${queryString}` : ""
-      }`
+        queryString ? `?${queryString}` : ''
+      }`,
     );
     return response.data;
   } catch (error) {
@@ -120,7 +120,7 @@ const createGuest = async (data: {
     });
     return response.data;
   } catch (error) {
-    console.error("Error creating estate manager guest:", error);
+    console.error('Error creating estate manager guest:', error);
     throw error;
   }
 };
@@ -136,10 +136,10 @@ const updateGuest = async (
     purpose?: string;
     arrival_time?: string;
     departure_time?: string;
-    status?: "pending" | "arrived" | "departed" | "cancelled";
+    status?: 'pending' | 'arrived' | 'departed' | 'cancelled';
     resident_id?: string;
     estate_id?: string;
-  }
+  },
 ) => {
   try {
     const response = await apiClient.put(SECURITY_GUARD_GUEST_URLS.UPDATE(id), {
@@ -156,7 +156,7 @@ const updateGuest = async (
 const deleteGuest = async (id: string) => {
   try {
     const response = await apiClient.delete(
-      SECURITY_GUARD_GUEST_URLS.DELETE(id)
+      SECURITY_GUARD_GUEST_URLS.DELETE(id),
     );
     return response.data;
   } catch (error) {
@@ -169,7 +169,7 @@ const deleteGuest = async (id: string) => {
 const markGuestAsArrived = async (id: string) => {
   try {
     const response = await apiClient.patch(
-      SECURITY_GUARD_GUEST_URLS.MARK_AS_ARRIVED(id)
+      SECURITY_GUARD_GUEST_URLS.MARK_AS_ARRIVED(id),
     );
     return response.data;
   } catch (error) {
@@ -182,7 +182,7 @@ const markGuestAsArrived = async (id: string) => {
 const markGuestAsCancelled = async (id: string) => {
   try {
     const response = await apiClient.patch(
-      SECURITY_GUARD_GUEST_URLS.MARK_AS_CANCELLED(id)
+      SECURITY_GUARD_GUEST_URLS.MARK_AS_CANCELLED(id),
     );
     return response.data;
   } catch (error) {
@@ -196,7 +196,7 @@ const markGuestAsDeparted = async (id: string, departure_time: string) => {
   try {
     const response = await apiClient.patch(
       SECURITY_GUARD_GUEST_URLS.MARK_AS_DEPARTED(id),
-      { departure_time }
+      {departure_time},
     );
     return response.data;
   } catch (error) {
@@ -208,7 +208,7 @@ const markGuestAsDeparted = async (id: string, departure_time: string) => {
 // Get all residents for the current security guard
 const getAllResidents = async (params?: PaginationParams) => {
   try {
-    let queryString = "";
+    let queryString = '';
 
     if (params) {
       queryString = qs.stringify(params, {
@@ -218,12 +218,12 @@ const getAllResidents = async (params?: PaginationParams) => {
 
     const response = await apiClient.get(
       `${SECURITY_GUARD_RESIDENT_URLS.GET_ALL}${
-        queryString ? `?${queryString}` : ""
-      }`
+        queryString ? `?${queryString}` : ''
+      }`,
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching residents:", error);
+    console.error('Error fetching residents:', error);
     throw error;
   }
 };

@@ -7,6 +7,8 @@ export interface HouseholdMember {
   name: string;
   relationship: 'Spouse' | 'Child' | 'Other';
   phone: string;
+  phone_country_code: string;
+  phone_calling_code: string;
   email?: string;
   created_at: string;
   updated_at: string;
@@ -82,6 +84,8 @@ const createHouseholdMember = async (data: {
   name: string;
   relationship: 'Spouse' | 'Child' | 'Other';
   phone?: string;
+  phone_country_code?: string;
+  phone_calling_code?: string;
   email?: string;
 }) => {
   const response = await apiClient.post(RESIDENT_HOUSEHOLD_MEMBER_URLS.CREATE, {
@@ -97,6 +101,8 @@ const updateHouseholdMember = async (
     name?: string;
     relationship?: 'Spouse' | 'Child' | 'Other';
     phone?: string;
+    phone_country_code?: string;
+    phone_calling_code?: string;
     email?: string;
   },
 ) => {

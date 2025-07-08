@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -6,21 +6,25 @@ import {
   ScrollView,
   StatusBar,
   Text,
-  Alert,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ArrowLeftIcon} from 'react-native-heroicons/outline';
 import {useNavigation} from '@react-navigation/native';
+import {Toast} from 'toastify-react-native';
 import colors from '../../../themes/colors';
 import fonts from '../../../themes/fonts';
 import TextInput from '../../../components/Common/Textinput/index';
 import Button from '../../../components/Common/Button/index';
+import PhoneInput from '../../../components/Common/PhoneInput/index';
+import authService from '../../../services/authService';
 
 interface ProfileFormData {
   first_name: string;
   last_name: string;
   email: string;
   phone: string;
+  phone_country_code: string; // Country code like "KE", "US"
+  phone_calling_code: string; // Calling code like "+254", "+27"
 }
 
 interface FormErrors {
@@ -28,21 +32,58 @@ interface FormErrors {
   last_name?: string;
   email?: string;
   phone?: string;
+  phone_country_code?: string;
+  phone_calling_code?: string;
 }
 
 const EditProfile = () => {
   const navigation = useNavigation();
 
-  // Initialize with some sample data (in real app, this would come from user's current profile)
+  // Initialize with empty data - will be loaded from API
   const [formData, setFormData] = useState<ProfileFormData>({
     first_name: '',
     last_name: '',
     email: '',
     phone: '',
+    phone_country_code: 'KE', // Default to Kenya country code
+    phone_calling_code: '+254', // Default to Kenya calling code
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    loadProfileData();
+  }, []);
+
+  const loadProfileData = async () => {
+    try {
+      setIsLoadingProfile(true);
+      const profileData = await authService.getProfile();
+      console.log('Profile Data', profileData);
+
+      setFormData({
+        first_name: profileData.first_name || '',
+        last_name: profileData.last_name || '',
+        email: profileData.email || '',
+        phone: profileData.phone || '',
+        phone_country_code: profileData.phone_country_code || 'KE',
+        phone_calling_code: profileData.phone_calling_code || '+254',
+      });
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to load profile',
+        text2: 'Please try again later',
+        position: 'top',
+        visibilityTime: 4000,
+      });
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -58,6 +99,29 @@ const EditProfile = () => {
       }
     };
 
+  const handlePhoneChange = (phone: string) => {
+    setFormData(prev => ({...prev, phone}));
+
+    // Clear phone error when user starts typing
+    if (errors.phone) {
+      setErrors(prev => ({...prev, phone: undefined}));
+    }
+  };
+
+  const handleCallingCodeChange = (callingCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      phone_calling_code: `+${callingCode}`,
+    }));
+  };
+
+  const handleCountryCodeChange = (countryCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      phone_country_code: countryCode,
+    }));
+  };
+
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -65,8 +129,10 @@ const EditProfile = () => {
 
   const validatePhone = (phone: string): boolean => {
     if (!phone.trim()) return true; // Phone is optional
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+    // Validate local phone number (without country code)
+    const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+    const phoneRegex = /^[0-9]{8,12}$/;
+    return phoneRegex.test(cleanPhone);
   };
 
   const validateForm = (): boolean => {
@@ -95,7 +161,7 @@ const EditProfile = () => {
 
     // Phone validation (optional)
     if (formData.phone.trim() && !validatePhone(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+      newErrors.phone = 'Please enter a valid phone number (8-12 digits)';
     }
 
     setErrors(newErrors);
@@ -110,27 +176,80 @@ const EditProfile = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Prepare profile data (exclude phone fields if phone is empty)
+      const profileData = {
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
+        email: formData.email.trim(),
+        ...(formData.phone.trim() && {
+          phone: formData.phone.trim(),
+          phone_country_code: formData.phone_country_code, // "KE", "US", etc.
+          phone_calling_code: formData.phone_calling_code, // "+254", "+27", etc.
+        }),
+      };
 
-      Alert.alert(
-        'Profile Updated',
-        'Your profile has been successfully updated.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ],
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update profile. Please try again.', [
-        {text: 'OK'},
-      ]);
+      await authService.updateProfile(profileData);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Updated',
+        text2: 'Your profile has been successfully updated',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+
+      // Navigate back after a short delay to show the toast
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
+    } catch (error: any) {
+      console.error('Failed to update profile:', error);
+
+      let errorMessage = 'Failed to update profile. Please try again.';
+
+      // Handle specific error cases
+      if (error.response?.status === 400) {
+        errorMessage = 'Invalid profile data. Please check your information.';
+      } else if (error.response?.status === 409) {
+        errorMessage = 'Email address is already taken.';
+      } else if (error.response?.status === 422) {
+        errorMessage = 'Please check your input and try again.';
+      }
+
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed',
+        text2: errorMessage,
+        position: 'top',
+        visibilityTime: 4000,
+      });
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Show loading state while profile data is being loaded
+  if (isLoadingProfile) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackPress}>
+              <ArrowLeftIcon size={24} color={colors.darkFont} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Edit Profile</Text>
+          </View>
+
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading profile...</Text>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
@@ -192,14 +311,17 @@ const EditProfile = () => {
                 testID="email-input"
               />
 
-              <TextInput
+              <PhoneInput
                 label="Phone Number"
                 placeholder="Enter your phone number (optional)"
                 value={formData.phone}
-                onChangeText={handleInputChange('phone')}
-                mode="phone"
+                onChangeText={handlePhoneChange}
+                onChangeCallingCode={handleCallingCodeChange}
+                onChangeCountryCode={handleCountryCodeChange}
+                defaultCode={formData.phone_country_code || 'KE'}
                 error={errors.phone}
                 testID="phone-input"
+                key={formData.phone_calling_code}
               />
             </View>
 
@@ -293,6 +415,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     backgroundColor: colors.whiteBg,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: fonts.regular,
+    color: colors.grayFont,
   },
 });
 

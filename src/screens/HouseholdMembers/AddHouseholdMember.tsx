@@ -139,6 +139,8 @@ const AddHouseholdMember = () => {
         name: formData.name.trim(),
         relationship: formData.relationship as 'Spouse' | 'Child' | 'Other',
         ...(formData.phone.trim() && {phone: formData.phone.trim()}),
+        phone_country_code: formData.phone_country_code,
+        phone_calling_code: formData.phone_calling_code,
         ...(formData.email.trim() && {email: formData.email.trim()}),
       };
 

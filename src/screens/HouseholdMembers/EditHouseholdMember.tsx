@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -37,7 +37,7 @@ interface FormErrors {
 
 const EditHouseholdMember = () => {
   const navigation = useNavigation();
-  const _route = useRoute();
+  const route = useRoute();
 
   const [formData, setFormData] = useState<HouseholdMemberFormData>({
     name: '',
@@ -50,29 +50,29 @@ const EditHouseholdMember = () => {
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [_isDataLoading, setIsDataLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
-  useEffect(() => {
-    loadMemberData();
-  }, []);
-
-  const loadMemberData = async () => {
+  const loadMemberData = useCallback(async () => {
     try {
-      // In a real app, you would get the ID from route params
-      // const memberId = route.params?.memberId;
-      // For now, using a mock ID - you would replace this with actual ID
-      const mockId = '1';
+      const memberId = (route.params as any)?.memberId;
+
+      if (!memberId) {
+        Toast.error('Member ID not found');
+        navigation.goBack();
+        return;
+      }
 
       const response =
-        await residentHouseholdMemberService.getHouseholdMemberById(mockId);
-      const memberData = response.data;
+        await residentHouseholdMemberService.getHouseholdMemberById(memberId);
+
+      const memberData = response;
 
       setFormData({
         name: memberData.name || '',
         email: memberData.email || '',
         phone: memberData.phone || '',
-        phone_country_code: 'KE', // You might need to extract this from existing data
-        phone_calling_code: '+254', // You might need to extract this from existing data
+        phone_country_code: memberData.phone_country_code || 'KE',
+        phone_calling_code: memberData.phone_calling_code || '+254',
         relationship: memberData.relationship || '',
       });
     } catch (error) {
@@ -81,7 +81,11 @@ const EditHouseholdMember = () => {
     } finally {
       setIsDataLoading(false);
     }
-  };
+  }, [route.params, navigation]);
+
+  useEffect(() => {
+    loadMemberData();
+  }, [loadMemberData]);
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -167,9 +171,13 @@ const EditHouseholdMember = () => {
     setIsLoading(true);
 
     try {
-      // In a real app, you would get the ID from route params
-      // const memberId = route.params?.memberId;
-      const mockId = '1'; // Replace with actual ID
+      const memberId = (route.params as any)?.memberId;
+
+      if (!memberId) {
+        Toast.error('Member ID not found');
+        navigation.goBack();
+        return;
+      }
 
       // Prepare data for API
       const memberData = {
@@ -177,10 +185,12 @@ const EditHouseholdMember = () => {
         relationship: formData.relationship as 'Spouse' | 'Child' | 'Other',
         ...(formData.phone.trim() && {phone: formData.phone.trim()}),
         ...(formData.email.trim() && {email: formData.email.trim()}),
+        phone_country_code: formData.phone_country_code,
+        phone_calling_code: formData.phone_calling_code,
       };
 
       await residentHouseholdMemberService.updateHouseholdMember(
-        mockId,
+        memberId,
         memberData,
       );
 
@@ -238,60 +248,66 @@ const EditHouseholdMember = () => {
           </View>
 
           {/* Form */}
-          <View style={styles.formContainer}>
-            {/* Personal Information Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Personal Information</Text>
-
-              <TextInput
-                label="Name"
-                placeholder="Enter member's name"
-                value={formData.name}
-                onChangeText={handleInputChange('name')}
-                error={errors.name}
-                required
-                autoCapitalize="words"
-                testID="name-input"
-              />
-
-              <TextInput
-                label="Email Address"
-                placeholder="Enter email address (optional)"
-                value={formData.email}
-                onChangeText={handleInputChange('email')}
-                mode="email"
-                error={errors.email}
-                autoCapitalize="none"
-                testID="email-input"
-              />
-
-              <PhoneInput
-                label="Phone Number"
-                placeholder="Enter phone number (optional)"
-                value={formData.phone}
-                onChangeText={handlePhoneChange}
-                onChangeCallingCode={handleCallingCodeChange}
-                onChangeCountryCode={handleCountryCodeChange}
-                defaultCode={formData.phone_country_code}
-                error={errors.phone}
-                testID="phone-input"
-              />
-
-              <DropdownInput
-                label="Relationship"
-                placeholder="Select relationship"
-                value={formData.relationship}
-                onSelect={handleInputChange('relationship')}
-                options={relationshipOptions}
-                error={errors.relationship}
-                required
-                testID="relationship-dropdown"
-              />
+          {isDataLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Loading member data...</Text>
             </View>
+          ) : (
+            <View style={styles.formContainer}>
+              {/* Personal Information Section */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Personal Information</Text>
 
-            {/* Bottom spacing for fixed button */}
-            <View style={styles.bottomSpacing} />
-          </View>
+                <TextInput
+                  label="Name"
+                  placeholder="Enter member's name"
+                  value={formData.name}
+                  onChangeText={handleInputChange('name')}
+                  error={errors.name}
+                  required
+                  autoCapitalize="words"
+                  testID="name-input"
+                />
+
+                <TextInput
+                  label="Email Address"
+                  placeholder="Enter email address (optional)"
+                  value={formData.email}
+                  onChangeText={handleInputChange('email')}
+                  mode="email"
+                  error={errors.email}
+                  autoCapitalize="none"
+                  testID="email-input"
+                />
+
+                <PhoneInput
+                  label="Phone Number"
+                  placeholder="Enter phone number (optional)"
+                  value={formData.phone}
+                  onChangeText={handlePhoneChange}
+                  onChangeCallingCode={handleCallingCodeChange}
+                  onChangeCountryCode={handleCountryCodeChange}
+                  defaultCode={formData.phone_country_code}
+                  error={errors.phone}
+                  testID="phone-input"
+                />
+
+                <DropdownInput
+                  label="Relationship"
+                  placeholder="Select relationship"
+                  value={formData.relationship}
+                  onSelect={handleInputChange('relationship')}
+                  options={relationshipOptions}
+                  error={errors.relationship}
+                  required
+                  testID="relationship-dropdown"
+                />
+              </View>
+
+              {/* Bottom spacing for fixed button */}
+              <View style={styles.bottomSpacing} />
+            </View>
+          )}
         </SafeAreaView>
       </ScrollView>
 
@@ -365,6 +381,17 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: fonts.regular,
+    color: colors.grayFont,
   },
   buttonSafeArea: {
     position: 'absolute',

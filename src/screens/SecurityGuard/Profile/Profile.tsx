@@ -12,7 +12,7 @@ import {
 import {useAuth} from '../../../contexts/AuthContext';
 import colors from '../../../themes/colors';
 import fonts from '../../../themes/fonts';
-import ProfileSummary from '../../../components/Profile/ProfileSummary';
+import ProfileSummary from './ProfileSummary';
 import {useNavigation} from '@react-navigation/native';
 import {ChevronRightIcon, UserIcon} from 'react-native-heroicons/outline';
 import {ArrowLeftStartOnRectangleIcon} from 'react-native-heroicons/solid';
