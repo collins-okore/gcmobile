@@ -4,39 +4,28 @@ import qs from 'qs';
 
 export interface Vehicle {
   id: string;
-  license_plate: string;
+  licensePlate: string;
   make: string;
   model: string;
   color: string;
-  resident_id?: string;
-  estate_id?: string;
-  estate?: {
-    id: string;
-    name: string;
-  };
-  /**
-   * The resident who owns the vehicle. This is only populated if the
-   * vehicle is associated with a resident.
-   */
   resident?: {
     id: string;
-    house_number: string;
+    houseNumber: string;
     unit?: string;
-    estate_id?: string;
     estate?: {
       id: string;
       name: string;
     };
     user?: {
       id: string;
-      first_name: string;
-      last_name: string;
+      firstName: string;
+      lastName: string;
       email: string;
       phone?: string;
     };
   };
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Pagination parameters interface (same as in other services)
@@ -71,13 +60,14 @@ const getAllVehicles = async (params?: PaginationParams) => {
         pagination: params.pagination,
         sort: params.sort,
       },
-      {encodeValuesOnly: true},
+      {encodeValuesOnly: false},
     )}`;
   }
 
   const response = await apiClient.get(
     `${RESIDENT_VEHICLE_URLS.GET_ALL}${queryString}`,
   );
+
   return response.data;
 };
 
@@ -104,15 +94,15 @@ const getVehicleById = async (id: string, params?: PaginationParams) => {
 
 // Create new vehicle
 const createVehicle = async (data: {
-  license_plate: string;
+  licensePlate: string;
   make: string;
   model: string;
   color?: string;
-  resident_id?: string;
-  estate_id: string;
 }) => {
   const response = await apiClient.post(RESIDENT_VEHICLE_URLS.CREATE, {
-    ...data,
+    data: {
+      ...data,
+    },
   });
   return response.data;
 };
@@ -121,16 +111,16 @@ const createVehicle = async (data: {
 const updateVehicle = async (
   id: string,
   data: {
-    license_plate?: string;
+    licensePlate?: string;
     make?: string;
     model?: string;
     color?: string;
-    resident_id?: string;
-    estate_id?: string;
   },
 ) => {
   const response = await apiClient.put(RESIDENT_VEHICLE_URLS.UPDATE(id), {
-    ...data,
+    data: {
+      ...data,
+    },
   });
   return response.data;
 };

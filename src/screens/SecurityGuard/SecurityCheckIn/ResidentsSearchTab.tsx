@@ -1,28 +1,22 @@
-import React, {useState} from 'react';
-import {View, FlatList, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import React, {useState, useCallback, useEffect} from 'react';
+import {
+  View,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import Icon from '../../../components/Common/Icon';
 import colors from '../../../themes/colors';
 import fonts from '../../../themes/fonts';
+import securityGuardGuestService from '../../../services/securityGuardGuestService';
+import {normalize} from '../../../lib/normalize';
+import {useNavigation, useIsFocused} from '@react-navigation/native';
 
-// Sample data for demonstration
-const sampleResidents = [
-  {
-    id: '1',
-    name: 'Alice Johnson',
-    phone: '+1234567892',
-    email: 'alice@email.com',
-    apartmentNo: 'C-301',
-    family: '4 members',
-  },
-  {
-    id: '2',
-    name: 'Bob Wilson',
-    phone: '+1234567893',
-    email: 'bob@email.com',
-    apartmentNo: 'D-102',
-    family: '2 members',
-  },
-];
+interface ResidentsSearchTabProps {
+  searchQuery: string;
+}
 
 // Helper function to get initials
 const getInitials = (name: string): string => {
@@ -34,53 +28,167 @@ const getInitials = (name: string): string => {
 };
 
 // Resident Item Component
-const ResidentItem = ({item}: {item: any}) => (
-  <TouchableOpacity style={styles.memberItem} activeOpacity={0.7}>
+const ResidentItem = ({
+  item,
+  onPress,
+}: {
+  item: any;
+  onPress: (residentId: string) => void;
+}) => (
+  <TouchableOpacity
+    style={styles.memberItem}
+    activeOpacity={0.7}
+    onPress={() => onPress(item.id)}>
     {/* Avatar with Initials */}
     <View style={styles.avatar}>
-      <Text style={styles.avatarText}>{getInitials(item.name)}</Text>
+      <Text style={styles.avatarText}>
+        {getInitials(
+          item.user
+            ? `${item.user.firstName} ${item.user.lastName}`
+            : item.name,
+        )}
+      </Text>
     </View>
 
     {/* Member Details */}
     <View style={styles.memberDetails}>
       <Text style={styles.memberName} numberOfLines={1} ellipsizeMode="tail">
-        {item.name}
+        {item.user ? `${item.user.firstName} ${item.user.lastName}` : item.name}
       </Text>
       <Text style={styles.memberApartment} numberOfLines={1}>
-        Apt: {item.apartmentNo}
+        House: {item.houseNumber}
+        {item.unit ? `, Unit ${item.unit}` : ''}
       </Text>
       <Text style={styles.memberContact} numberOfLines={1}>
-        {item.phone}
+        {item.user?.phone || item.phone}
       </Text>
       <Text style={styles.memberContact} numberOfLines={1}>
-        {item.email}
+        {item.user?.email || item.email}
       </Text>
-      <Text style={styles.memberFamily} numberOfLines={1}>
-        {item.family}
-      </Text>
+      {item.householdSize && (
+        <Text style={styles.memberFamily} numberOfLines={1}>
+          Household: {item.householdSize}
+        </Text>
+      )}
     </View>
   </TouchableOpacity>
 );
 
-const ResidentsSearchTab = () => {
-  const [filteredResidents, _setFilteredResidents] = useState(sampleResidents);
+const ResidentsSearchTab: React.FC<ResidentsSearchTabProps> = ({
+  searchQuery,
+}) => {
+  const [residents, setResidents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
+  const handleResidentPress = (residentId: string) => {
+    (navigation as any).navigate('ViewResident', {residentId});
+  };
+
+  const loadResidents = useCallback(async (query?: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const andConditions: any = [];
+      if (query && query.trim()) {
+        const searchTerm = query.trim();
+        andConditions.push({
+          $or: [
+            {houseNumber: {$containsi: searchTerm}},
+            {blockCourt: {$containsi: searchTerm}},
+            {unit: {$containsi: searchTerm}},
+            {user: {firstName: {$containsi: searchTerm}}},
+            {user: {lastName: {$containsi: searchTerm}}},
+            {user: {phone: {$containsi: searchTerm}}},
+            {user: {email: {$containsi: searchTerm}}},
+          ],
+        });
+      }
+      const response = await securityGuardGuestService.getAllResidents({
+        pagination: {
+          page: 1,
+          pageSize: 50,
+        },
+        sort: ['updatedAt:desc'],
+        filters: andConditions.length > 0 ? {$and: andConditions} : {},
+        populate: ['user'],
+      });
+      setResidents(normalize(response.data));
+    } catch (err: any) {
+      console.error('Error loading residents:', err);
+      setError('Failed to load residents. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isFocused) return;
+    const timeoutId = setTimeout(() => {
+      loadResidents(searchQuery);
+    }, 300); // Debounce search for 300ms
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, loadResidents, isFocused]);
+
+  const renderEmptyState = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.emptyText}>Loading residents...</Text>
+        </View>
+      );
+    }
+    if (error) {
+      return (
+        <View style={styles.emptyState}>
+          <Icon name="exclamation-triangle" size={48} color="#FF6B6B" />
+          <Text style={[styles.emptyText, {color: '#FF6B6B'}]}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => loadResidents(searchQuery)}>
+            <Text style={styles.retryText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    if (searchQuery.trim()) {
+      return (
+        <View style={styles.emptyState}>
+          <Icon name="search" size={48} color={colors.grayFont} />
+          <Text style={styles.emptyText}>
+            No residents found for '{searchQuery}'
+          </Text>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.emptyState}>
+        <Icon name="users" size={48} color={colors.grayFont} />
+        <Text style={styles.emptyText}>No residents found</Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.tabContent}>
       <FlatList
-        data={filteredResidents}
+        data={residents}
         keyExtractor={item => item.id}
-        renderItem={({item}) => <ResidentItem item={item} />}
+        renderItem={({item}) => (
+          <ResidentItem item={item} onPress={handleResidentPress} />
+        )}
         numColumns={2}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
-        columnWrapperStyle={styles.row}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Icon name="search" size={48} color={colors.grayFont} />
-            <Text style={styles.emptyText}>No residents found</Text>
-          </View>
+        contentContainerStyle={
+          residents.length === 0 ? styles.listContainer : styles.listContainer
         }
+        columnWrapperStyle={styles.row}
+        ListEmptyComponent={renderEmptyState}
+        refreshing={isLoading}
+        onRefresh={() => loadResidents(searchQuery)}
       />
     </View>
   );
@@ -169,6 +277,18 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: colors.grayFont,
     marginTop: 16,
+  },
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: colors.whiteBg,
+    fontSize: 16,
+    fontFamily: fonts.semibold,
   },
 });
 

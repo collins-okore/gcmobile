@@ -23,9 +23,11 @@ import colors from '../../../themes/colors';
 import fonts from '../../../themes/fonts';
 import TextInput from '../../../components/Common/Textinput/index';
 import DropdownInput from '../../../components/Common/DropdownInput/index';
+import SearchableDropdown from '../../../components/Common/SearchableDropdown/index';
 import DateTimeInput from '../../../components/Common/DateTimeInput/index';
 import Button from '../../../components/Common/Button/index';
 import PhoneInput from '../../../components/Common/PhoneInput/index';
+import {normalize} from '../../../lib/normalize';
 
 const EditGuest = () => {
   const navigation = useNavigation();
@@ -37,17 +39,58 @@ const EditGuest = () => {
     fullName: '',
     idNumber: '',
     phone: '',
-    phone_country_code: 'KE', // Default to Kenya country code
-    phone_calling_code: '+254', // Default to Kenya calling code
+    phoneCountryCode: 'KE', // Default to Kenya country code
+    phoneCallingCode: '+254', // Default to Kenya calling code
     purpose: '',
     arrivalTime: new Date(),
+    departureTime: new Date(),
     vehicleLicensePlate: '',
+    vehicleMake: '',
+    vehicleModel: '',
+    vehicleColor: '',
+    residentId: '',
   });
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [residents, setResidents] = useState<
+    Array<{label: string; value: string}>
+  >([]);
+  const [isLoadingResidents, setIsLoadingResidents] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // Load residents function
+  const loadResidents = useCallback(async () => {
+    try {
+      setIsLoadingResidents(true);
+      const response = await securityGuardGuestService.getAllResidents({
+        pagination: {
+          page: 1,
+          pageSize: 1000, // Get all residents
+        },
+        populate: ['user'],
+      });
+      const residentResponseData = normalize(response);
+
+      const residentOptions = residentResponseData.map((resident: any) => ({
+        label: `${resident.blockCourt}, ${resident.houseNumber} - ${resident.user.firstName} ${resident.user.lastName}`,
+        value: `${resident.id}`,
+      }));
+
+      setResidents(residentOptions);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Load Residents',
+        text2: 'Failed to load residents. Please try again.',
+        position: 'top',
+        visibilityTime: 4000,
+      });
+    } finally {
+      setIsLoadingResidents(false);
+    }
+  }, []);
 
   // Fetch guest data
   const fetchGuest = useCallback(async () => {
@@ -56,28 +99,35 @@ const EditGuest = () => {
       setFetchError(null);
 
       const response = await securityGuardGuestService.getGuestById(guestId, {
-        populate: ['resident.user', 'estate'],
+        populate: ['resident', 'resident.user', 'estate'],
         pagination: {
           page: 1,
           pageSize: 1,
         },
       });
+      const guestData = normalize(response.data);
 
-      const guestData = response;
       setGuest(guestData);
 
       // Pre-populate form with existing data
       setFormData({
         fullName: guestData.name || '',
-        idNumber: guestData.id_number || '',
+        idNumber: guestData.idNumber || '',
         phone: guestData.phone || '',
-        phone_country_code: 'KE', // Default fallback
-        phone_calling_code: '+254', // Default fallback
+        phoneCountryCode: 'KE', // Default fallback
+        phoneCallingCode: '+254', // Default fallback
         purpose: guestData.purpose || '',
-        arrivalTime: guestData.arrival_time
-          ? new Date(guestData.arrival_time)
+        arrivalTime: guestData.arrivalTime
+          ? new Date(guestData.arrivalTime)
           : new Date(),
-        vehicleLicensePlate: guestData.vehicle_license_plate || '',
+        departureTime: guestData.departureTime
+          ? new Date(guestData.departureTime)
+          : new Date(),
+        vehicleLicensePlate: guestData.vehicleLicensePlate || '',
+        vehicleMake: guestData.vehicleMake || '',
+        vehicleModel: guestData.vehicleModel || '',
+        vehicleColor: guestData.vehicleColor || '',
+        residentId: `${guestData.resident?.id}` || '',
       });
     } catch (err: any) {
       console.error('Error fetching guest:', err);
@@ -94,13 +144,14 @@ const EditGuest = () => {
     }
   }, [guestId, fetchGuest]);
 
-  // Auto-refresh when screen comes into focus
+  // Auto-refresh when screen comes into focus and load residents
   useFocusEffect(
     useCallback(() => {
       if (guestId) {
         fetchGuest();
       }
-    }, [guestId, fetchGuest]),
+      loadResidents();
+    }, [guestId, fetchGuest, loadResidents]),
   );
 
   const handleBackPress = () => {
@@ -127,14 +178,14 @@ const EditGuest = () => {
   const handleCallingCodeChange = (callingCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_calling_code: `+${callingCode}`,
+      phoneCallingCode: `+${callingCode}`,
     }));
   };
 
   const handleCountryCodeChange = (countryCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_country_code: countryCode,
+      phoneCountryCode: countryCode,
     }));
   };
 
@@ -163,6 +214,10 @@ const EditGuest = () => {
       newErrors.purpose = 'Purpose is required';
     }
 
+    if (!formData.residentId.trim()) {
+      newErrors.residentId = 'Please select a resident';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -181,12 +236,23 @@ const EditGuest = () => {
         ...(formData.phone.trim() && {
           phone: formData.phone.trim(),
         }),
-        id_number: formData.idNumber.trim(),
+        idNumber: formData.idNumber.trim(),
         purpose: formData.purpose,
-        arrival_time: formData.arrivalTime.toISOString(),
+        arrivalTime: formData.arrivalTime.toISOString(),
+        departureTime: formData.departureTime.toISOString(),
         ...(formData.vehicleLicensePlate.trim() && {
-          vehicle_license_plate: formData.vehicleLicensePlate.trim(),
+          vehicleLicensePlate: formData.vehicleLicensePlate.trim(),
         }),
+        ...(formData.vehicleMake.trim() && {
+          vehicleMake: formData.vehicleMake.trim(),
+        }),
+        ...(formData.vehicleModel.trim() && {
+          vehicleModel: formData.vehicleModel.trim(),
+        }),
+        ...(formData.vehicleColor.trim() && {
+          vehicleColor: formData.vehicleColor.trim(),
+        }),
+        resident: formData.residentId,
       };
 
       await securityGuardGuestService.updateGuest(guestId, updateData);
@@ -247,13 +313,13 @@ const EditGuest = () => {
   };
 
   const purposeOptions = [
-    {label: 'Business Meeting', value: 'Business Meeting'},
-    {label: 'Personal Visit', value: 'Personal Visit'},
-    {label: 'Delivery', value: 'Delivery'},
-    {label: 'Maintenance', value: 'Maintenance'},
-    {label: 'Guest/Friend', value: 'Guest/Friend'},
-    {label: 'Family Visit', value: 'Family Visit'},
-    {label: 'Other', value: 'Other Visit'},
+    {label: 'Business Meeting', value: 'business'},
+    {label: 'Personal Visit', value: 'personal'},
+    {label: 'Delivery', value: 'delivery'},
+    {label: 'Maintenance', value: 'maintenance'},
+    {label: 'Guest/Friend', value: 'guest'},
+    {label: 'Family Visit', value: 'family'},
+    {label: 'Other', value: 'other'},
   ];
 
   // Show loading screen while fetching guest data
@@ -356,11 +422,11 @@ const EditGuest = () => {
                 onChangeText={handlePhoneChange}
                 onChangeCallingCode={handleCallingCodeChange}
                 onChangeCountryCode={handleCountryCodeChange}
-                defaultCode={formData.phone_country_code || 'KE'}
+                defaultCode={formData.phoneCountryCode || 'KE'}
                 error={errors.phone}
                 required
                 testID="phone-input"
-                key={formData.phone_calling_code}
+                key={formData.phoneCallingCode}
               />
             </View>
 
@@ -386,6 +452,33 @@ const EditGuest = () => {
                 mode="datetime"
                 testID="arrival-time-picker"
               />
+
+              <DateTimeInput
+                label="Departure Date & Time"
+                value={formData.departureTime}
+                onChange={handleInputChange('departureTime')}
+                mode="datetime"
+                testID="departure-time-picker"
+              />
+            </View>
+
+            {/* Resident Information Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Resident Information</Text>
+
+              <SearchableDropdown
+                label="Select Resident"
+                placeholder="Search for a resident..."
+                searchPlaceholder="Search by name or house number..."
+                value={formData.residentId}
+                onSelect={handleInputChange('residentId')}
+                options={residents}
+                error={errors.residentId}
+                loading={isLoadingResidents}
+                required
+                emptyMessage="No residents found"
+                testID="resident-dropdown"
+              />
             </View>
 
             {/* Vehicle Information Section */}
@@ -401,6 +494,30 @@ const EditGuest = () => {
                 value={formData.vehicleLicensePlate}
                 onChangeText={handleInputChange('vehicleLicensePlate')}
                 testID="license-plate-input"
+              />
+
+              <TextInput
+                label="Vehicle Make"
+                placeholder="e.g., Toyota, BMW, Honda"
+                value={formData.vehicleMake}
+                onChangeText={handleInputChange('vehicleMake')}
+                testID="vehicle-make-input"
+              />
+
+              <TextInput
+                label="Vehicle Model"
+                placeholder="e.g., Camry, X5, Civic"
+                value={formData.vehicleModel}
+                onChangeText={handleInputChange('vehicleModel')}
+                testID="vehicle-model-input"
+              />
+
+              <TextInput
+                label="Vehicle Color"
+                placeholder="Enter vehicle color"
+                value={formData.vehicleColor}
+                onChangeText={handleInputChange('vehicleColor')}
+                testID="vehicle-color-input"
               />
             </View>
 

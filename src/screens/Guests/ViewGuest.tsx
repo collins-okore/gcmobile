@@ -22,6 +22,7 @@ import {format, isThisYear} from 'date-fns';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from '../../components/Common/Icon';
 import DropdownMenu from '../../components/Common/DropdownMenu';
+import {normalize} from '../../lib/normalize';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -54,11 +55,11 @@ const ViewGuest = () => {
         const response = await residentGuestService.getResidentGuestById(
           guestId,
           {
-            populate: ['resident.user', 'estate'],
+            populate: ['resident.user'],
           },
         );
 
-        setGuest(response.data);
+        setGuest(normalize(response.data));
       } catch (err: any) {
         console.error('Error fetching guest:', err);
         setError('Failed to load guest details. Please try again.');
@@ -241,7 +242,7 @@ const ViewGuest = () => {
                 </Text>
               </View>
               <Text style={styles.timeText}>
-                {formatDate(guest.arrival_time)}
+                {formatDate(guest.arrivalTime)}
               </Text>
             </View>
           </View>
@@ -256,7 +257,7 @@ const ViewGuest = () => {
             <View style={styles.divider} />
             <View style={styles.guestDetailsItem}>
               <Text style={styles.guestDetailsTitle}>ID Number</Text>
-              <Text style={styles.guestDetailsValue}>{guest.id_number}</Text>
+              <Text style={styles.guestDetailsValue}>{guest.idNumber}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.guestDetailsItem}>
@@ -270,13 +271,13 @@ const ViewGuest = () => {
             </View>
             <View style={styles.divider} />
 
-            {guest.resident?.house_number && (
+            {guest.resident?.houseNumber && (
               <>
                 <View style={styles.divider} />
                 <View style={styles.guestDetailsItem}>
                   <Text style={styles.guestDetailsTitle}>House Number</Text>
                   <Text style={styles.guestDetailsValue}>
-                    House {guest.resident.house_number}
+                    House {guest.resident.houseNumber}
                   </Text>
                 </View>
               </>
@@ -293,56 +294,56 @@ const ViewGuest = () => {
               </>
             )}
           </View>
-          {(guest.vehicle_license_plate ||
-            guest.vehicle_make ||
-            guest.vehicle_model ||
-            guest.vehicle_color) && (
+          {(guest.vehicleLicensePlate ||
+            guest.vehicleMake ||
+            guest.vehicleModel ||
+            guest.vehicleColor) && (
             <View style={styles.guestDetails}>
               <View style={styles.guestDetailsHeader}>
                 <Text style={styles.guestDetailsTitle}>Vehicle Details</Text>
               </View>
-              {guest.vehicle_license_plate && (
+              {guest.vehicleLicensePlate && (
                 <>
                   <View style={styles.guestDetailsItem}>
                     <Text style={styles.guestDetailsTitle}>License Plate</Text>
                     <Text style={styles.guestDetailsValue}>
-                      {guest.vehicle_license_plate}
+                      {guest.vehicleLicensePlate}
                     </Text>
                   </View>
-                  {(guest.vehicle_make ||
-                    guest.vehicle_model ||
-                    guest.vehicle_color) && <View style={styles.divider} />}
+                  {(guest.vehicleMake ||
+                    guest.vehicleModel ||
+                    guest.vehicleColor) && <View style={styles.divider} />}
                 </>
               )}
-              {guest.vehicle_make && (
+              {guest.vehicleMake && (
                 <>
                   <View style={styles.guestDetailsItem}>
                     <Text style={styles.guestDetailsTitle}>Vehicle Make</Text>
                     <Text style={styles.guestDetailsValue}>
-                      {guest.vehicle_make}
+                      {guest.vehicleMake}
                     </Text>
                   </View>
-                  {(guest.vehicle_model || guest.vehicle_color) && (
+                  {(guest.vehicleModel || guest.vehicleColor) && (
                     <View style={styles.divider} />
                   )}
                 </>
               )}
-              {guest.vehicle_model && (
+              {guest.vehicleModel && (
                 <>
                   <View style={styles.guestDetailsItem}>
                     <Text style={styles.guestDetailsTitle}>Vehicle Model</Text>
                     <Text style={styles.guestDetailsValue}>
-                      {guest.vehicle_model}
+                      {guest.vehicleModel}
                     </Text>
                   </View>
-                  {guest.vehicle_color && <View style={styles.divider} />}
+                  {guest.vehicleColor && <View style={styles.divider} />}
                 </>
               )}
-              {guest.vehicle_color && (
+              {guest.vehicleColor && (
                 <View style={styles.guestDetailsItem}>
                   <Text style={styles.guestDetailsTitle}>Vehicle Color</Text>
                   <Text style={styles.guestDetailsValue}>
-                    {guest.vehicle_color}
+                    {guest.vehicleColor}
                   </Text>
                 </View>
               )}

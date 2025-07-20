@@ -2,19 +2,12 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import React from 'react';
 import fonts from '../../themes/fonts';
 import colors from '../../themes/colors';
-import {ClockIcon} from 'react-native-heroicons/outline';
+import {CalendarIcon} from 'react-native-heroicons/outline';
 import {format, isThisYear} from 'date-fns';
+import {SecurityGuardGuest} from '../../services/securityGuardGuestService';
 
-interface Guest {
-  id: string;
-  name: string;
-  date: string;
-  purpose: string;
-  vehiclePlate: string;
-}
-
-interface UpcomingGuestItemProps {
-  guest: Guest;
+interface PastGuestItemProps {
+  guest: SecurityGuardGuest;
   onPressItem: (guestId: string) => void;
 }
 
@@ -30,27 +23,29 @@ const formatDate = (dateString: string) => {
   return `${format(date, 'dd MMM yyyy')} · ${time}`; // e.g., "13 May 2022 · 13:30"
 };
 
-const UpcomingGuestItem: React.FC<UpcomingGuestItemProps> = ({
-  guest,
-  onPressItem,
-}) => {
+const PastGuestItem: React.FC<PastGuestItemProps> = ({guest, onPressItem}) => {
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={() => onPressItem(guest.id)}>
       <View style={styles.left}>
         <View style={styles.avatar}>
-          <ClockIcon color={colors.grayIconColor} size={26} />
+          <CalendarIcon color={colors.grayIconColor} size={26} />
         </View>
         <View style={styles.details}>
-          <Text style={styles.date}>{formatDate(guest.date)}</Text>
-          <Text style={styles.name}>{guest.name}</Text>
+          <Text style={styles.date}>
+            {formatDate(guest.departureTime || guest.updatedAt)}
+          </Text>
+          <Text style={styles.name}>
+            {guest?.resident?.blockCourt && `${guest?.resident?.blockCourt} - `}
+            {guest?.resident?.houseNumber && `${guest?.resident?.houseNumber}`}
+          </Text>
           <Text style={styles.purpose}>{guest.purpose}</Text>
         </View>
       </View>
       <View style={styles.right}>
         <View style={styles.plateContainer}>
-          <Text style={styles.vehiclePlate}>{guest.vehiclePlate}</Text>
+          <Text style={styles.vehiclePlate}>{guest.vehicleLicensePlate}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -109,4 +104,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UpcomingGuestItem;
+export default PastGuestItem;

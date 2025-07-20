@@ -1,5 +1,5 @@
-import apiClient from "./apiClient";
-import { SECURITY_GUARD_CHECK_IN_URLS } from "./apiUrls";
+import apiClient from './apiClient';
+import {SECURITY_GUARD_CHECK_IN_URLS} from './apiUrls';
 
 // Define interfaces for the different types of search results
 export interface ResidentResult {
@@ -80,15 +80,21 @@ export interface GuestResult {
   };
 }
 
-export type SearchResult = ResidentResult | VehicleResult | HouseholdMemberResult | GuestResult;
+export type SearchResult =
+  | ResidentResult
+  | VehicleResult
+  | HouseholdMemberResult
+  | GuestResult;
 
 // Search for residents, vehicles, household members, and guests
 const searchCheckIn = async (query: string): Promise<SearchResult[]> => {
   try {
-    const response = await apiClient.get(SECURITY_GUARD_CHECK_IN_URLS.SEARCH(query));
+    const response = await apiClient.get(
+      SECURITY_GUARD_CHECK_IN_URLS.SEARCH(query),
+    );
     return response.data;
   } catch (error) {
-    console.error("Error searching for check-in:", error);
+    console.error('Error searching for check-in:', error);
     throw error;
   }
 };
@@ -97,34 +103,35 @@ const searchCheckIn = async (query: string): Promise<SearchResult[]> => {
 const scanQrCode = async (qrCode: string): Promise<SearchResult> => {
   try {
     // This is a placeholder - the actual endpoint will be implemented later
-    // For now, we'll simulate a response
-    console.log("QR code scanned:", qrCode);
-    
+
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // Return a mock response based on the QR code
     // In a real implementation, this would call an API endpoint
-    throw new Error("QR code scanning endpoint not implemented yet");
+    throw new Error('QR code scanning endpoint not implemented yet');
   } catch (error) {
-    console.error("Error scanning QR code:", error);
+    console.error('Error scanning QR code:', error);
     throw error;
   }
 };
 
 // Record check-in for a resident, vehicle, household member, or guest
-const recordCheckIn = async (entityType: string, entityId: string, checkInData: any): Promise<any> => {
+const recordCheckIn = async (
+  entityType: string,
+  entityId: string,
+  checkInData: any,
+): Promise<any> => {
   try {
     // This is a placeholder - the actual endpoint will be implemented later
-    console.log("Recording check-in for:", entityType, entityId, checkInData);
-    
+
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // In a real implementation, this would call an API endpoint
-    throw new Error("Record check-in endpoint not implemented yet");
+    throw new Error('Record check-in endpoint not implemented yet');
   } catch (error) {
-    console.error("Error recording check-in:", error);
+    console.error('Error recording check-in:', error);
     throw error;
   }
 };
@@ -132,7 +139,7 @@ const recordCheckIn = async (entityType: string, entityId: string, checkInData: 
 export const securityGuardCheckInService = {
   searchCheckIn,
   scanQrCode,
-  recordCheckIn
+  recordCheckIn,
 };
 
 export default securityGuardCheckInService;

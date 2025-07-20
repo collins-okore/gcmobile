@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 import {
   SECURITY_GUARD_GUEST_URLS,
   SECURITY_GUARD_RESIDENT_URLS,
+  SECURITY_GUARD_VEHICLE_URLS,
 } from './apiUrls';
 import qs from 'qs';
 
@@ -9,30 +10,36 @@ export interface SecurityGuardGuest {
   id: string;
   name: string;
   phone: string;
-  id_number: string;
-  vehicle_license_plate?: string;
+  phoneCountryCode?: string;
+  phoneCallingCode?: string;
+  idNumber: string;
+  vehicleLicensePlate?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleColor?: string;
   purpose: string;
-  arrival_time: string;
-  departure_time?: string;
+  arrivalTime: string;
+  departureTime?: string;
   status: 'pending' | 'arrived' | 'departed' | 'cancelled';
   resident?: {
     id: string;
     user: {
       id: string;
-      first_name: string;
-      last_name: string;
+      firstName: string;
+      lastName: string;
       email: string;
       phone: string;
     };
-    house_number: string;
+    houseNumber: string;
+    blockCourt: string;
     unit: string;
   };
   estate?: {
     id: string;
     name: string;
   };
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PaginationMeta {
@@ -43,7 +50,7 @@ export interface PaginationMeta {
 }
 
 export interface PaginationParams {
-  pagination: {
+  pagination?: {
     page?: number;
     pageSize?: number;
   };
@@ -59,7 +66,7 @@ const getAllGuests = async (params?: PaginationParams) => {
 
   if (params) {
     queryString = qs.stringify(params, {
-      encodeValuesOnly: true, // prettify URL
+      encodeValuesOnly: false, // prettify URL
     });
   }
 
@@ -69,6 +76,7 @@ const getAllGuests = async (params?: PaginationParams) => {
         queryString ? `?${queryString}` : ''
       }`,
     );
+
     return {
       data: response.data.data as SecurityGuardGuest[],
       meta: response.data.meta.pagination as PaginationMeta,
@@ -85,7 +93,7 @@ const getGuestById = async (id: string, params?: PaginationParams) => {
 
   if (params) {
     queryString = qs.stringify(params, {
-      encodeValuesOnly: true,
+      encodeValuesOnly: false,
     });
   }
 
@@ -102,21 +110,27 @@ const getGuestById = async (id: string, params?: PaginationParams) => {
   }
 };
 
-// Create estate manager guest
+// Create security guard guest
 const createGuest = async (data: {
   name: string;
   phone: string;
-  id_number: string;
-  vehicle_license_plate?: string;
+  phoneCountryCode: string;
+  phoneCallingCode: string;
+  idNumber: string;
   purpose: string;
-  arrival_time: string;
-  departure_time?: string;
-  resident_id: string;
-  estate_id: string;
+  arrivalTime: string;
+  departureTime: string;
+  resident: string;
+  vehicleLicensePlate?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleColor?: string;
 }) => {
   try {
     const response = await apiClient.post(SECURITY_GUARD_GUEST_URLS.CREATE, {
-      ...data,
+      data: {
+        ...data,
+      },
     });
     return response.data;
   } catch (error) {
@@ -131,19 +145,23 @@ const updateGuest = async (
   data: {
     name?: string;
     phone?: string;
-    id_number?: string;
-    vehicle_license_plate?: string;
+    idNumber?: string;
+    vehicleLicensePlate?: string;
+    vehicleMake?: string;
+    vehicleModel?: string;
+    vehicleColor?: string;
+    resident: string;
     purpose?: string;
-    arrival_time?: string;
-    departure_time?: string;
+    arrivalTime?: string;
+    departureTime?: string;
     status?: 'pending' | 'arrived' | 'departed' | 'cancelled';
-    resident_id?: string;
-    estate_id?: string;
   },
 ) => {
   try {
     const response = await apiClient.put(SECURITY_GUARD_GUEST_URLS.UPDATE(id), {
-      ...data,
+      data: {
+        ...data,
+      },
     });
     return response.data;
   } catch (error) {
@@ -166,10 +184,11 @@ const deleteGuest = async (id: string) => {
 };
 
 // Mark guest as arrived
-const markGuestAsArrived = async (id: string) => {
+const markGuestAsArrived = async (id: string, arrivalTime?: string) => {
   try {
-    const response = await apiClient.patch(
+    const response = await apiClient.put(
       SECURITY_GUARD_GUEST_URLS.MARK_AS_ARRIVED(id),
+      arrivalTime ? {data: {arrivalTime}} : {},
     );
     return response.data;
   } catch (error) {
@@ -181,7 +200,7 @@ const markGuestAsArrived = async (id: string) => {
 // Mark guest as cancelled
 const markGuestAsCancelled = async (id: string) => {
   try {
-    const response = await apiClient.patch(
+    const response = await apiClient.put(
       SECURITY_GUARD_GUEST_URLS.MARK_AS_CANCELLED(id),
     );
     return response.data;
@@ -192,11 +211,11 @@ const markGuestAsCancelled = async (id: string) => {
 };
 
 // Mark guest as departed with departure time
-const markGuestAsDeparted = async (id: string, departure_time: string) => {
+const markGuestAsDeparted = async (id: string, departureTime?: string) => {
   try {
-    const response = await apiClient.patch(
+    const response = await apiClient.put(
       SECURITY_GUARD_GUEST_URLS.MARK_AS_DEPARTED(id),
-      {departure_time},
+      departureTime ? {data: {departureTime}} : {},
     );
     return response.data;
   } catch (error) {
@@ -212,7 +231,7 @@ const getAllResidents = async (params?: PaginationParams) => {
 
     if (params) {
       queryString = qs.stringify(params, {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: false, // prettify URL
       });
     }
 
@@ -221,9 +240,96 @@ const getAllResidents = async (params?: PaginationParams) => {
         queryString ? `?${queryString}` : ''
       }`,
     );
+
     return response.data;
   } catch (error) {
     console.error('Error fetching residents:', error);
+    throw error;
+  }
+};
+
+// Get a single resident
+const getResidentById = async (id: string, params?: PaginationParams) => {
+  try {
+    let queryString = '';
+
+    if (params) {
+      queryString = qs.stringify(params, {
+        encodeValuesOnly: false, // prettify URL
+      });
+    }
+    const response = await apiClient.get(
+      `${SECURITY_GUARD_RESIDENT_URLS.GET_ONE(id)}${
+        queryString ? `?${queryString}` : ''
+      }`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching resident with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+// Get vehicles from the security guard's estate
+const getEstateVehicles = async (params?: PaginationParams) => {
+  try {
+    let queryString = '';
+
+    if (params) {
+      queryString = qs.stringify(params, {
+        encodeValuesOnly: false, // prettify URL
+      });
+    }
+
+    const response = await apiClient.get(
+      `${SECURITY_GUARD_VEHICLE_URLS.GET_ALL}${
+        queryString ? `?${queryString}` : ''
+      }`,
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching estate vehicles:', error);
+    throw error;
+  }
+};
+
+// Get a single vehicle
+const getVehicleById = async (id: string, params?: PaginationParams) => {
+  try {
+    let queryString = '';
+
+    if (params) {
+      queryString = qs.stringify(params, {
+        encodeValuesOnly: false, // prettify URL
+      });
+    }
+
+    const response = await apiClient.get(
+      `${SECURITY_GUARD_VEHICLE_URLS.GET_ONE(id)}${
+        queryString ? `?${queryString}` : ''
+      }`,
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching vehicle with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+// Verify passCode entered manually or scanned by the security guard
+const verifyPassCode = async (passCode: string) => {
+  try {
+    const response = await apiClient.post(
+      SECURITY_GUARD_GUEST_URLS.VERIFY_PASS_CODE,
+      {
+        data: {passCode},
+      },
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error verifying pass code:`, error);
     throw error;
   }
 };
@@ -235,9 +341,13 @@ export const securityGuardGuestService = {
   updateGuest,
   deleteGuest,
   getAllResidents,
+  getResidentById,
   markGuestAsArrived,
   markGuestAsCancelled,
   markGuestAsDeparted,
+  getEstateVehicles,
+  getVehicleById,
+  verifyPassCode,
 };
 
 export default securityGuardGuestService;

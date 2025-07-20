@@ -22,6 +22,7 @@ import DropdownInput from '../../components/Common/DropdownInput/index';
 import DateTimeInput from '../../components/Common/DateTimeInput/index';
 import Button from '../../components/Common/Button/index';
 import PhoneInput from '../../components/Common/PhoneInput/index';
+import {normalize} from '../../lib/normalize';
 
 const EditGuest = () => {
   const navigation = useNavigation();
@@ -33,8 +34,8 @@ const EditGuest = () => {
     fullName: '',
     idNumber: '',
     phone: '',
-    phone_country_code: 'KE', // Default to Kenya country code
-    phone_calling_code: '+254', // Default to Kenya calling code
+    phoneCountryCode: 'KE', // Default to Kenya country code
+    phoneCallingCode: '+254', // Default to Kenya calling code
     purpose: '',
     arrivalTime: new Date(),
     vehicleLicensePlate: '',
@@ -62,24 +63,24 @@ const EditGuest = () => {
           },
         );
 
-        const guestData = response.data;
+        const guestData = normalize(response.data);
         setGuest(guestData);
 
         // Pre-populate form with existing data
         setFormData({
           fullName: guestData.name || '',
-          idNumber: guestData.id_number || '',
+          idNumber: guestData.idNumber || '',
           phone: guestData.phone || '',
-          phone_country_code: guestData.phone_country_code || 'KE',
-          phone_calling_code: guestData.phone_calling_code || '+254',
+          phoneCountryCode: guestData.phoneCountryCode || 'KE',
+          phoneCallingCode: guestData.phoneCallingCode || '+254',
           purpose: guestData.purpose || '',
-          arrivalTime: guestData.arrival_time
-            ? new Date(guestData.arrival_time)
+          arrivalTime: guestData.arrivalTime
+            ? new Date(guestData.arrivalTime)
             : new Date(),
-          vehicleLicensePlate: guestData.vehicle_license_plate || '',
-          vehicleMake: guestData.vehicle_make || '',
-          vehicleModel: guestData.vehicle_model || '',
-          vehicleColor: guestData.vehicle_color || '',
+          vehicleLicensePlate: guestData.vehicleLicensePlate || '',
+          vehicleMake: guestData.vehicleMake || '',
+          vehicleModel: guestData.vehicleModel || '',
+          vehicleColor: guestData.vehicleColor || '',
         });
       } catch (err: any) {
         console.error('Error fetching guest:', err);
@@ -118,14 +119,14 @@ const EditGuest = () => {
   const handleCallingCodeChange = (callingCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_calling_code: `+${callingCode}`,
+      phoneCallingCode: `+${callingCode}`,
     }));
   };
 
   const handleCountryCodeChange = (countryCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_country_code: countryCode,
+      phoneCountryCode: countryCode,
     }));
   };
 
@@ -171,23 +172,23 @@ const EditGuest = () => {
         name: formData.fullName.trim(),
         ...(formData.phone.trim() && {
           phone: formData.phone.trim(),
-          phone_country_code: formData.phone_country_code, // "KE", "US", etc.
-          phone_calling_code: formData.phone_calling_code, // "+254", "+27", etc.
+          phoneCountryCode: formData.phoneCountryCode, // "KE", "US", etc.
+          phoneCallingCode: formData.phoneCallingCode, // "+254", "+27", etc.
         }),
-        id_number: formData.idNumber.trim(),
+        idNumber: formData.idNumber.trim(),
         purpose: formData.purpose,
-        arrival_time: formData.arrivalTime.toISOString(),
+        arrivalTime: formData.arrivalTime.toISOString(),
         ...(formData.vehicleLicensePlate.trim() && {
-          vehicle_license_plate: formData.vehicleLicensePlate.trim(),
+          vehicleLicensePlate: formData.vehicleLicensePlate.trim(),
         }),
         ...(formData.vehicleMake.trim() && {
-          vehicle_make: formData.vehicleMake.trim(),
+          vehicleMake: formData.vehicleMake.trim(),
         }),
         ...(formData.vehicleModel.trim() && {
-          vehicle_model: formData.vehicleModel.trim(),
+          vehicleModel: formData.vehicleModel.trim(),
         }),
         ...(formData.vehicleColor.trim() && {
-          vehicle_color: formData.vehicleColor.trim(),
+          vehicleColor: formData.vehicleColor.trim(),
         }),
       };
 
@@ -315,18 +316,18 @@ const EditGuest = () => {
                   // Pre-populate form with existing data
                   setFormData({
                     fullName: guestData.name || '',
-                    idNumber: guestData.id_number || '',
+                    idNumber: guestData.idNumber || '',
                     phone: guestData.phone || '',
-                    phone_country_code: guestData.phone_country_code || 'KE',
-                    phone_calling_code: guestData.phone_calling_code || '+254',
+                    phoneCountryCode: guestData.phoneCountryCode || 'KE',
+                    phoneCallingCode: guestData.phoneCallingCode || '+254',
                     purpose: guestData.purpose || '',
-                    arrivalTime: guestData.arrival_time
-                      ? new Date(guestData.arrival_time)
+                    arrivalTime: guestData.arrivalTime
+                      ? new Date(guestData.arrivalTime)
                       : new Date(),
-                    vehicleLicensePlate: guestData.vehicle_license_plate || '',
-                    vehicleMake: guestData.vehicle_make || '',
-                    vehicleModel: guestData.vehicle_model || '',
-                    vehicleColor: guestData.vehicle_color || '',
+                    vehicleLicensePlate: guestData.vehicleLicensePlate || '',
+                    vehicleMake: guestData.vehicleMake || '',
+                    vehicleModel: guestData.vehicleModel || '',
+                    vehicleColor: guestData.vehicleColor || '',
                   });
                 } catch (err: any) {
                   console.error('Error fetching guest:', err);
@@ -398,11 +399,11 @@ const EditGuest = () => {
                 onChangeText={handlePhoneChange}
                 onChangeCallingCode={handleCallingCodeChange}
                 onChangeCountryCode={handleCountryCodeChange}
-                defaultCode={formData.phone_country_code || 'KE'}
+                defaultCode={formData.phoneCountryCode || 'KE'}
                 error={errors.phone}
                 required
                 testID="phone-input"
-                key={formData.phone_calling_code}
+                key={formData.phoneCallingCode}
               />
             </View>
 

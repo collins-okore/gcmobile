@@ -22,6 +22,7 @@ import fonts from '../../themes/fonts';
 import residentVehicleService, {
   Vehicle,
 } from '../../services/residentVehicleService';
+import {normalize} from '../../lib/normalize';
 
 const Vehicles = () => {
   const navigation = useNavigation();
@@ -40,17 +41,15 @@ const Vehicles = () => {
       setError(null);
 
       const response = await residentVehicleService.getAllVehicles({
-        populate: ['resident.user', 'estate'],
+        populate: ['resident', 'resident.user'],
         pagination: {
           page: 1,
           pageSize: 100, // Get all vehicles
         },
-        sort: {
-          updated_at: 'desc',
-        },
+        sort: ['updatedAt:desc'],
       });
 
-      setVehicles(response.data || []);
+      setVehicles(normalize(response.data) || []);
     } catch (error: any) {
       console.error('Error fetching vehicles:', error);
       const errorMessage =
@@ -110,7 +109,7 @@ const Vehicles = () => {
       {/* Vehicle Details */}
       <View style={styles.vehicleDetails}>
         <Text style={styles.plateNumber} numberOfLines={1}>
-          {item.license_plate}
+          {item.licensePlate}
         </Text>
         <Text style={styles.vehicleMake} numberOfLines={1}>
           {item.make}

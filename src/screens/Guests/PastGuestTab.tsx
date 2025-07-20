@@ -14,6 +14,7 @@ import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import residentGuestService, {
   ResidentGuest,
 } from '../../services/residentGuestService';
+import {normalize} from '../../lib/normalize';
 
 const ItemSeparator = () => <View style={styles.separator} />;
 
@@ -31,14 +32,14 @@ const PastGuestTab = () => {
       setError(null);
 
       const response = await residentGuestService.getAllResidentGuests({
-        populate: ['resident', 'estate'],
+        populate: ['resident', 'resident.user'],
         filters: {
-          status: {in: ['cancelled', 'departed']},
+          status: {$in: ['cancelled', 'departed']},
         },
-        sort: {updated_at: 'desc'},
+        sort: ['updatedAt:desc'],
       });
 
-      setPastGuests(response.data);
+      setPastGuests(normalize(response.data));
     } catch (err: any) {
       console.error('Error fetching past guests:', err);
       setError('Failed to load past guests. Please try again.');
@@ -68,9 +69,9 @@ const PastGuestTab = () => {
   const transformedData = pastGuests.map(guest => ({
     id: guest.id,
     name: guest.name,
-    date: guest.departure_time || guest.updated_at,
+    date: guest.departureTime || guest.updatedAt,
     purpose: guest.purpose,
-    vehicle_plate: guest.vehicle_license_plate || '',
+    vehiclePlate: guest.vehicleLicensePlate || '',
   }));
 
   // Loading state

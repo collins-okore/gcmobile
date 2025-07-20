@@ -16,6 +16,7 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import colors from '../../themes/colors';
 import fonts from '../../themes/fonts';
 import TextInput from '../../components/Common/Textinput/index';
+import PhoneInput from '../../components/Common/PhoneInput/index';
 import Button from '../../components/Common/Button/index';
 
 interface SignUpFormData {
@@ -24,6 +25,8 @@ interface SignUpFormData {
   email: string;
   password: string;
   phone: string;
+  phone_calling_code: string;
+  phone_country_code: string;
 }
 
 interface FormErrors {
@@ -52,6 +55,8 @@ const SignUp = () => {
     email: '',
     password: '',
     phone: '',
+    phone_calling_code: '+254', // Default to Kenya calling code
+    phone_country_code: 'KE', // Default to Kenya country code
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -75,6 +80,29 @@ const SignUp = () => {
       }
     };
 
+  const handlePhoneChange = (phone: string) => {
+    setFormData(prev => ({...prev, phone}));
+
+    // Clear phone error when user starts typing
+    if (errors.phone) {
+      setErrors(prev => ({...prev, phone: undefined}));
+    }
+  };
+
+  const handleCallingCodeChange = (callingCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      phone_calling_code: `+${callingCode}`,
+    }));
+  };
+
+  const handleCountryCodeChange = (countryCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      phone_country_code: countryCode,
+    }));
+  };
+
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -82,8 +110,9 @@ const SignUp = () => {
 
   const validatePhone = (phone: string): boolean => {
     if (!phone.trim()) return true; // Phone is optional
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+    // Validate local phone number (without country code)
+    const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+    return /^[0-9]{8,12}$/.test(cleanPhone);
   };
 
   const validatePassword = (password: string): boolean => {
@@ -140,10 +169,13 @@ const SignUp = () => {
     try {
       // Call the register API
       await authService.register({
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
+        firstName: formData.first_name.trim(),
+        lastName: formData.last_name.trim(),
         email: formData.email.trim(),
+        username: formData.email.trim(),
         phone: formData.phone.trim(),
+        phoneCountryCode: formData.phone_country_code.trim(),
+        phoneCallingCode: formData.phone_calling_code.trim(),
         password: formData.password,
       });
 
@@ -158,8 +190,6 @@ const SignUp = () => {
         ],
       );
     } catch (error: any) {
-      console.error('Sign up error:', error);
-
       // Handle different error types
       let errorMessage = 'Failed to create account. Please try again.';
 
@@ -255,14 +285,17 @@ const SignUp = () => {
                 testID="last-name-input"
               />
 
-              <TextInput
+              <PhoneInput
                 label="Phone Number"
                 placeholder="Enter your phone number (optional)"
                 value={formData.phone}
-                onChangeText={handleInputChange('phone')}
-                mode="phone"
+                onChangeText={handlePhoneChange}
+                onChangeCallingCode={handleCallingCodeChange}
+                onChangeCountryCode={handleCountryCodeChange}
+                defaultCode={formData.phone_country_code || 'KE'}
                 error={errors.phone}
                 testID="phone-input"
+                key={formData.phone_calling_code}
               />
             </View>
 

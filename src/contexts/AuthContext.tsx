@@ -11,27 +11,29 @@ import authService from '../services/authService';
 
 interface User {
   id: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone?: string;
-  role: {
+  phoneCountryCode?: string;
+  phoneCallingCode?: string;
+  role?: {
     id?: string;
     name: string;
   };
   // Extended profile data
-  avatar_url?: string | null;
-  house_number?: string;
-  block?: string;
-  estate_name?: string;
+  avatarUrl?: string | null;
+  houseNumber?: string;
+  blockCourt?: string;
+  estateName?: string;
   resident?: {
     id: string;
-    house_number: string;
-    block_court: string;
+    houseNumber: string;
+    blockCourt: string;
   };
   blocked?: boolean;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AuthContextValue {
@@ -121,9 +123,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
 
         // Update state immediately with basic user data
         setUser(response.user);
-        setToken(response.access_token);
-
-        console.log('AuthContext: Login successful, user authenticated');
+        setToken(response.jwt);
 
         // Load full profile data in the background
         try {
@@ -132,23 +132,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
           // Transform and merge profile data
           const transformedUser: User = {
             id: profileData.id,
-            first_name: profileData.first_name,
-            last_name: profileData.last_name,
+            firstName: profileData.firstName,
+            lastName: profileData.lastName,
             email: profileData.email,
             phone: profileData.phone,
             role: {
               id: profileData.role?.id,
-              name: profileData.role?.name || response.user.role.name,
+              name: profileData.role?.name,
             },
             // Extended profile data
-            avatar_url: profileData.avatar_url,
-            house_number: profileData.house_number,
-            block: profileData.block,
-            estate_name: profileData.estate_name,
+            avatarUrl: profileData.avatarUrl,
+            houseNumber: profileData?.resident?.houseNumber || '',
+            blockCourt: profileData?.resident?.blockCourt || '',
+            estateName:
+              profileData?.resident?.estate?.name ||
+              profileData?.securityGuard?.estate?.name ||
+              'Unknown',
             resident: profileData.resident,
             blocked: profileData.blocked,
-            created_at: profileData.created_at,
-            updated_at: profileData.updated_at,
+            createdAt: profileData.createdAt,
+            updatedAt: profileData.updatedAt,
           };
 
           // Update with full profile data
@@ -157,8 +160,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
             'gc-connect-user',
             JSON.stringify(transformedUser),
           );
-
-          console.log('AuthContext: Full profile loaded after login');
         } catch (profileErr) {
           console.warn(
             'AuthContext: Failed to load full profile after login:',
@@ -239,8 +240,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
       // Transform the profile data to match our User interface
       const transformedUser: User = {
         id: profileData.id,
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
         email: profileData.email,
         phone: profileData.phone,
         role: {
@@ -248,14 +249,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
           name: profileData.role?.name || 'Unknown',
         },
         // Extended profile data
-        avatar_url: profileData.avatar_url,
-        house_number: profileData.house_number,
-        block: profileData.block,
-        estate_name: profileData.estate_name,
+        avatarUrl: profileData.avatarUrl,
+        houseNumber: profileData?.resident?.houseNumber || '',
+        blockCourt: profileData?.resident?.blockCourt || '',
+        estateName:
+          profileData?.resident?.estate?.name ||
+          profileData?.securityGuard?.estate?.name ||
+          'Unknown',
         resident: profileData.resident,
         blocked: profileData.blocked,
-        created_at: profileData.created_at,
-        updated_at: profileData.updated_at,
+        createdAt: profileData.createdAt,
+        updatedAt: profileData.updatedAt,
       };
 
       // Update user in state
@@ -266,8 +270,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         'gc-connect-user',
         JSON.stringify(transformedUser),
       );
-
-      console.log('AuthContext: Full profile loaded successfully');
     } catch (err: any) {
       console.error('Error loading full profile:', err);
 
@@ -295,11 +297,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         const userData = JSON.parse(storedUser);
         setUser(userData);
         setToken(storedToken);
-        console.log('AuthContext: Auth state refreshed from storage');
       } else {
         setUser(null);
         setToken(null);
-        console.log('AuthContext: No auth data found in storage');
       }
     } catch (err) {
       console.error('Error refreshing auth state:', err);
@@ -313,7 +313,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
       setIsLoading(true);
       await authService.logout();
       await clearAuthData();
-      console.log('AuthContext: User logged out successfully');
     } catch (err) {
       console.error('Error during logout:', err);
       // Still clear local data even if server logout fails
@@ -347,7 +346,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
           currentUser !== (user ? JSON.stringify(user) : null);
 
         if (hasTokenChanged || hasUserChanged) {
-          console.log('AuthContext: External auth state change detected');
           await refreshAuthState();
         }
       } catch (error) {
@@ -360,17 +358,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
 
     return () => clearInterval(interval);
   }, [token, user, refreshAuthState]);
-
-  // Debug logging for state changes
-  useEffect(() => {
-    console.log('AuthContext: State changed', {
-      isAuthenticated,
-      hasUser: !!user,
-      hasToken: !!token,
-      userFirstName: user?.first_name,
-      isLoading,
-    });
-  }, [isAuthenticated, user, token, isLoading]);
 
   const value: AuthContextValue = {
     // State

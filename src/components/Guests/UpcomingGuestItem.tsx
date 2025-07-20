@@ -4,17 +4,10 @@ import fonts from '../../themes/fonts';
 import colors from '../../themes/colors';
 import {ClockIcon} from 'react-native-heroicons/outline';
 import {format, isThisYear} from 'date-fns';
-
-interface Guest {
-  id: string;
-  name: string;
-  date: string;
-  purpose: string;
-  vehiclePlate: string;
-}
+import {SecurityGuardGuest} from '../../services/securityGuardGuestService';
 
 interface UpcomingGuestItemProps {
-  guest: Guest;
+  guest: SecurityGuardGuest;
   onPressItem: (guestId: string) => void;
 }
 
@@ -43,14 +36,19 @@ const UpcomingGuestItem: React.FC<UpcomingGuestItemProps> = ({
           <ClockIcon color={colors.grayIconColor} size={26} />
         </View>
         <View style={styles.details}>
-          <Text style={styles.date}>{formatDate(guest.date)}</Text>
-          <Text style={styles.name}>{guest.name}</Text>
+          <Text style={styles.date}>
+            {formatDate(guest.arrivalTime || guest.createdAt)}
+          </Text>
+          <Text style={styles.name}>
+            {guest?.resident?.blockCourt && `${guest?.resident?.blockCourt} - `}
+            {guest?.resident?.houseNumber && `${guest?.resident?.houseNumber}`}
+          </Text>
           <Text style={styles.purpose}>{guest.purpose}</Text>
         </View>
       </View>
       <View style={styles.right}>
         <View style={styles.plateContainer}>
-          <Text style={styles.vehiclePlate}>{guest.vehiclePlate}</Text>
+          <Text style={styles.vehiclePlate}>{guest.vehicleLicensePlate}</Text>
         </View>
       </View>
     </TouchableOpacity>

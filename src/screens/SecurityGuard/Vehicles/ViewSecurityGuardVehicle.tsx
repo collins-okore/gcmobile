@@ -12,15 +12,15 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {ArrowLeftIcon} from 'react-native-heroicons/outline';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {Toast} from 'toastify-react-native';
-import colors from '../../themes/colors';
-import fonts from '../../themes/fonts';
-import Button from '../../components/Common/Button/index';
-import DropdownMenu from '../../components/Common/DropdownMenu/index';
+import colors from '../../../themes/colors';
+import fonts from '../../../themes/fonts';
+import Button from '../../../components/Common/Button/index';
+import DropdownMenu from '../../../components/Common/DropdownMenu/index';
 import residentVehicleService, {
   Vehicle,
-} from '../../services/residentVehicleService';
-import Icon from '../../components/Common/Icon';
-import {normalize} from '../../lib/normalize';
+} from '../../../services/residentVehicleService';
+import Icon from '../../../components/Common/Icon';
+import {normalize} from '../../../lib/normalize';
 
 const ViewVehicle = () => {
   const navigation = useNavigation();

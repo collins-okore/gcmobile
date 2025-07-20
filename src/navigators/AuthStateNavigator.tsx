@@ -6,7 +6,6 @@ import RootNavigator from './RootNavigator';
 
 const AuthStateNavigator = () => {
   const {isAuthenticated, isLoading} = useAuth();
-  console.log('isAuthenticated', isAuthenticated);
 
   if (isLoading) {
     return (

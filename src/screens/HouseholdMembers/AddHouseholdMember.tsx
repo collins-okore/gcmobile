@@ -23,8 +23,8 @@ interface HouseholdMemberFormData {
   name: string;
   email: string;
   phone: string;
-  phone_country_code: string;
-  phone_calling_code: string;
+  phoneCountryCode: string;
+  phoneCallingCode: string;
   relationship: 'Spouse' | 'Child' | 'Other' | '';
 }
 
@@ -42,8 +42,8 @@ const AddHouseholdMember = () => {
     name: '',
     email: '',
     phone: '',
-    phone_country_code: 'KE',
-    phone_calling_code: '+254',
+    phoneCountryCode: 'KE',
+    phoneCallingCode: '+254',
     relationship: '',
   });
 
@@ -74,14 +74,14 @@ const AddHouseholdMember = () => {
   const handleCallingCodeChange = (callingCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_calling_code: callingCode,
+      phoneCallingCode: callingCode,
     }));
   };
 
   const handleCountryCodeChange = (countryCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_country_code: countryCode,
+      phoneCountryCode: countryCode,
     }));
   };
 
@@ -139,8 +139,8 @@ const AddHouseholdMember = () => {
         name: formData.name.trim(),
         relationship: formData.relationship as 'Spouse' | 'Child' | 'Other',
         ...(formData.phone.trim() && {phone: formData.phone.trim()}),
-        phone_country_code: formData.phone_country_code,
-        phone_calling_code: formData.phone_calling_code,
+        phoneCountryCode: formData.phoneCountryCode,
+        phoneCallingCode: formData.phoneCallingCode,
         ...(formData.email.trim() && {email: formData.email.trim()}),
       };
 
@@ -231,7 +231,7 @@ const AddHouseholdMember = () => {
                 onChangeText={handlePhoneChange}
                 onChangeCallingCode={handleCallingCodeChange}
                 onChangeCountryCode={handleCountryCodeChange}
-                defaultCode={formData.phone_country_code}
+                defaultCode={formData.phoneCountryCode}
                 error={errors.phone}
                 testID="phone-input"
               />

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React, {useState} from 'react';
-import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
+import {TabView, TabBar} from 'react-native-tab-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from '../../../components/Common/Icon';
 import colors from '../../../themes/colors';
@@ -16,12 +16,6 @@ import {useNavigation} from '@react-navigation/native';
 import GuestsSearchTab from './GuestsSearchTab';
 import ResidentsSearchTab from './ResidentsSearchTab';
 import VehiclesSearchTab from './VehiclesSearchTab';
-
-const renderScene = SceneMap({
-  guests: GuestsSearchTab,
-  residents: ResidentsSearchTab,
-  vehicles: VehiclesSearchTab,
-});
 
 const routes = [
   {key: 'guests', title: 'Guests'},
@@ -34,6 +28,19 @@ const Search = () => {
   const [index, setIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
+
+  const renderScene = ({route}: {route: any}) => {
+    switch (route.key) {
+      case 'guests':
+        return <GuestsSearchTab searchQuery={searchQuery} />;
+      case 'residents':
+        return <ResidentsSearchTab searchQuery={searchQuery} />;
+      case 'vehicles':
+        return <VehiclesSearchTab searchQuery={searchQuery} />;
+      default:
+        return null;
+    }
+  };
 
   const renderTabBar = (props: any) => (
     <TabBar
@@ -59,8 +66,6 @@ const Search = () => {
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
-    // TODO: Implement actual search logic
-    console.log('Searching for:', text);
   };
 
   const handleBackPress = () => {

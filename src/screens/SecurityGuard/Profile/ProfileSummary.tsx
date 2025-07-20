@@ -11,34 +11,33 @@ const ProfileSummary = () => {
 
   // Load full profile on component mount if we don't have extended data
   useEffect(() => {
-    const loadProfile = async () => {
-      if (user && !user.house_number && !user.resident) {
-        setIsLoadingProfile(true);
-        try {
-          await loadFullProfile();
-        } catch (error) {
-          console.error('Failed to load profile:', error);
-        } finally {
-          setIsLoadingProfile(false);
-        }
-      }
-    };
-
-    loadProfile();
-  }, [user, loadFullProfile]);
+    if (
+      user &&
+      !user.houseNumber &&
+      !user.resident &&
+      !isLoadingProfile // prevent re-entry while loading
+    ) {
+      setIsLoadingProfile(true);
+      loadFullProfile()
+        .catch(error => console.error('Failed to load profile:', error))
+        .finally(() => setIsLoadingProfile(false));
+    }
+    // Only depend on the minimal set needed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Format user name
   const userName = user
-    ? `${user.first_name} ${user.last_name}`.trim()
+    ? `${user.firstName} ${user.lastName}`.trim()
     : 'Loading...';
 
   // Format address - prioritize resident data, fallback to direct properties
   const userAddress = user
-    ? user.resident?.house_number && user.resident?.block_court
-      ? `House ${user.resident.house_number}, Block ${user.resident.block_court}`
-      : user.house_number && user.block
-      ? `House ${user.house_number}, Block ${user.block}`
-      : user.estate_name || 'Address not available'
+    ? user.resident?.houseNumber && user.resident?.blockCourt
+      ? `House ${user.resident.houseNumber}, Block ${user.resident.blockCourt}`
+      : user.houseNumber && user.blockCourt
+      ? `House ${user.houseNumber}, Block ${user.blockCourt}`
+      : user.estateName || 'Address not available'
     : 'Loading...';
 
   return (

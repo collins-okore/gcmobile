@@ -172,10 +172,6 @@ const SideEffectExample = () => {
 
   React.useEffect(() => {
     if (isAuthenticated && user) {
-      console.log(
-        `User ${user.first_name} logged in with role: ${user.role.name}`,
-      );
-
       // You could perform other side effects here:
       // - Analytics tracking
       // - Load user-specific data

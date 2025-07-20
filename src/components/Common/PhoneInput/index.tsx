@@ -62,7 +62,6 @@ const PhoneInputComponent: React.FC<PhoneInputComponentProps> = ({
 
   const handleCountryChange = (country: any) => {
     // Extract and send country code and calling code when country changes
-    console.log('Country changed:', country);
 
     if (onChangeCountryCode && country.cca2) {
       onChangeCountryCode(country.cca2);

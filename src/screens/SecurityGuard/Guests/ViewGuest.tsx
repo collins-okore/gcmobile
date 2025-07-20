@@ -7,6 +7,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  Modal, // <-- Add Modal import
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {ArrowLeftIcon} from 'react-native-heroicons/outline';
@@ -26,6 +27,8 @@ import {format, isThisYear} from 'date-fns';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from '../../../components/Common/Icon';
 import DropdownMenu from '../../../components/Common/DropdownMenu';
+import {normalize} from '../../../lib/normalize';
+import DateTimeInput from '../../../components/Common/DateTimeInput';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -47,6 +50,10 @@ const ViewGuest = () => {
   const [guest, setGuest] = useState<SecurityGuardGuest | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showArrivalModal, setShowArrivalModal] = useState(false);
+  const [arrivalTime, setArrivalTime] = useState(new Date());
+  const [showDepartureModal, setShowDepartureModal] = useState(false);
+  const [departureTime, setDepartureTime] = useState(new Date());
 
   // Fetch guest data
   const fetchGuest = React.useCallback(async () => {
@@ -55,14 +62,14 @@ const ViewGuest = () => {
       setError(null);
 
       const response = await securityGuardGuestService.getGuestById(guestId, {
-        populate: ['resident.user', 'estate'],
+        populate: ['resident', 'resident.user'],
         pagination: {
           page: 1,
           pageSize: 1,
         },
       });
 
-      setGuest(response);
+      setGuest(normalize(response.data));
     } catch (err: any) {
       console.error('Error fetching guest:', err);
       setError('Failed to load guest details. Please try again.');
@@ -96,26 +103,38 @@ const ViewGuest = () => {
   };
 
   const handleMarkAsArrived = () => {
-    Alert.alert('Mark as Arrived', `Mark ${guest?.name} as arrived?`, [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Mark Arrived',
-        onPress: confirmMarkAsArrived,
-      },
-    ]);
+    setArrivalTime(new Date());
+    setShowArrivalModal(true);
   };
 
-  const confirmMarkAsArrived = async () => {
+  const handleArrivalModalCancel = () => {
+    setShowArrivalModal(false);
+  };
+
+  const handleArrivalModalSubmit = async () => {
+    setShowArrivalModal(false);
+    await confirmMarkAsArrived(arrivalTime);
+  };
+
+  // Update confirmMarkAsArrived to accept arrivalTime
+  const confirmMarkAsArrived = async (selectedTime?: Date) => {
     try {
       setLoading(true);
-      await securityGuardGuestService.markGuestAsArrived(guestId);
-
-      // Update local state
-      setGuest(prev => (prev ? {...prev, status: 'arrived'} : null));
-
+      await securityGuardGuestService.markGuestAsArrived(
+        guestId,
+        selectedTime ? selectedTime.toISOString() : undefined,
+      );
+      setGuest(prev =>
+        prev
+          ? {
+              ...prev,
+              status: 'arrived',
+              arrivalTime: selectedTime
+                ? selectedTime.toISOString()
+                : prev.arrivalTime,
+            }
+          : null,
+      );
       Toast.show({
         type: 'success',
         text1: 'Guest Checked In',
@@ -138,34 +157,35 @@ const ViewGuest = () => {
   };
 
   const handleMarkAsDeparted = () => {
-    Alert.alert('Mark as Departed', `Mark ${guest?.name} as departed?`, [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Mark Departed',
-        onPress: confirmMarkAsDeparted,
-      },
-    ]);
+    setDepartureTime(new Date());
+    setShowDepartureModal(true);
   };
 
-  const confirmMarkAsDeparted = async () => {
+  const handleDepartureModalCancel = () => {
+    setShowDepartureModal(false);
+  };
+
+  const handleDepartureModalSubmit = async () => {
+    setShowDepartureModal(false);
+    await confirmMarkAsDeparted(departureTime);
+  };
+
+  // Update confirmMarkAsDeparted to accept departureTime
+  const confirmMarkAsDeparted = async (selectedTime?: Date) => {
     try {
       setLoading(true);
-      const departureTime = new Date().toISOString();
+      const departureTimeStr = selectedTime
+        ? selectedTime.toISOString()
+        : new Date().toISOString();
       await securityGuardGuestService.markGuestAsDeparted(
         guestId,
-        departureTime,
+        departureTimeStr,
       );
-
-      // Update local state
       setGuest(prev =>
         prev
-          ? {...prev, status: 'departed', departure_time: departureTime}
+          ? {...prev, status: 'departed', departureTime: departureTimeStr}
           : null,
       );
-
       Toast.show({
         type: 'success',
         text1: 'Guest Departed',
@@ -252,14 +272,22 @@ const ViewGuest = () => {
 
   // Get dropdown menu options based on guest status
   const getMenuOptions = () => {
-    const options = [
-      {
+    const options: Array<{
+      label: string;
+      value: string;
+      icon: string;
+      onPress: () => void;
+    }> = [];
+
+    // Only allow editing for pending or arrived guests
+    if (guest?.status === 'pending' || guest?.status === 'arrived') {
+      options.push({
         label: 'Edit Guest',
         value: 'edit',
         icon: 'edit',
         onPress: handleEditPress,
-      },
-    ];
+      });
+    }
 
     if (guest?.status === 'pending') {
       options.push({
@@ -360,7 +388,7 @@ const ViewGuest = () => {
                 </Text>
               </View>
               <Text style={styles.timeText}>
-                {formatDate(guest.arrival_time)}
+                {formatDate(guest.arrivalTime)}
               </Text>
             </View>
           </View>
@@ -375,12 +403,15 @@ const ViewGuest = () => {
             <View style={styles.divider} />
             <View style={styles.guestDetailsItem}>
               <Text style={styles.guestDetailsTitle}>ID Number</Text>
-              <Text style={styles.guestDetailsValue}>{guest.id_number}</Text>
+              <Text style={styles.guestDetailsValue}>{guest.idNumber}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.guestDetailsItem}>
               <Text style={styles.guestDetailsTitle}>Phone</Text>
-              <Text style={styles.guestDetailsValue}>{guest.phone}</Text>
+              <Text style={styles.guestDetailsValue}>
+                {guest.phoneCallingCode || ''}
+                {guest.phone}
+              </Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.guestDetailsItem}>
@@ -397,7 +428,7 @@ const ViewGuest = () => {
                   </Text>
                   <Text style={styles.guestDetailsValue}>
                     {guest.resident.user
-                      ? `${guest.resident.user.first_name} ${guest.resident.user.last_name}`
+                      ? `${guest.resident.user.firstName} ${guest.resident.user.lastName}`
                       : 'N/A'}
                   </Text>
                 </View>
@@ -405,12 +436,12 @@ const ViewGuest = () => {
               </>
             )}
 
-            {guest.resident?.house_number && (
+            {guest.resident?.houseNumber && (
               <>
                 <View style={styles.guestDetailsItem}>
                   <Text style={styles.guestDetailsTitle}>House Number</Text>
                   <Text style={styles.guestDetailsValue}>
-                    House {guest.resident.house_number}
+                    House {guest.resident.houseNumber}
                   </Text>
                 </View>
                 <View style={styles.divider} />
@@ -430,30 +461,82 @@ const ViewGuest = () => {
             )}
 
             {guest.estate && (
-              <View style={styles.guestDetailsItem}>
-                <Text style={styles.guestDetailsTitle}>Estate</Text>
-                <Text style={styles.guestDetailsValue}>
-                  {guest.estate.name}
-                </Text>
-              </View>
+              <>
+                <View style={styles.guestDetailsItem}>
+                  <Text style={styles.guestDetailsTitle}>Estate</Text>
+                  <Text style={styles.guestDetailsValue}>
+                    {guest.estate.name}
+                  </Text>
+                </View>
+                <View style={styles.divider} />
+              </>
             )}
+
+            <View style={styles.guestDetailsItem}>
+              <Text style={styles.guestDetailsTitle}>Arrival Time</Text>
+              <Text style={styles.guestDetailsValue}>
+                {formatDate(guest.arrivalTime)}
+              </Text>
+            </View>
           </View>
 
-          {guest.vehicle_license_plate && (
+          {(guest.vehicleLicensePlate ||
+            guest.vehicleMake ||
+            guest.vehicleModel ||
+            guest.vehicleColor) && (
             <View style={styles.guestDetails}>
               <View style={styles.guestDetailsHeader}>
                 <Text style={styles.guestDetailsTitle}>Vehicle Details</Text>
               </View>
-              <View style={styles.guestDetailsItem}>
-                <Text style={styles.guestDetailsTitle}>License Plate</Text>
-                <Text style={styles.guestDetailsValue}>
-                  {guest.vehicle_license_plate}
-                </Text>
-              </View>
+
+              {guest.vehicleLicensePlate && (
+                <>
+                  <View style={styles.guestDetailsItem}>
+                    <Text style={styles.guestDetailsTitle}>License Plate</Text>
+                    <Text style={styles.guestDetailsValue}>
+                      {guest.vehicleLicensePlate}
+                    </Text>
+                  </View>
+                  <View style={styles.divider} />
+                </>
+              )}
+
+              {guest.vehicleMake && (
+                <>
+                  <View style={styles.guestDetailsItem}>
+                    <Text style={styles.guestDetailsTitle}>Vehicle Make</Text>
+                    <Text style={styles.guestDetailsValue}>
+                      {guest.vehicleMake}
+                    </Text>
+                  </View>
+                  <View style={styles.divider} />
+                </>
+              )}
+
+              {guest.vehicleModel && (
+                <>
+                  <View style={styles.guestDetailsItem}>
+                    <Text style={styles.guestDetailsTitle}>Vehicle Model</Text>
+                    <Text style={styles.guestDetailsValue}>
+                      {guest.vehicleModel}
+                    </Text>
+                  </View>
+                  <View style={styles.divider} />
+                </>
+              )}
+
+              {guest.vehicleColor && (
+                <View style={styles.guestDetailsItem}>
+                  <Text style={styles.guestDetailsTitle}>Vehicle Color</Text>
+                  <Text style={styles.guestDetailsValue}>
+                    {guest.vehicleColor}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
 
-          {guest.departure_time && (
+          {guest.departureTime && (
             <View style={styles.guestDetails}>
               <View style={styles.guestDetailsHeader}>
                 <Text style={styles.guestDetailsTitle}>Departure Details</Text>
@@ -461,13 +544,135 @@ const ViewGuest = () => {
               <View style={styles.guestDetailsItem}>
                 <Text style={styles.guestDetailsTitle}>Departure Time</Text>
                 <Text style={styles.guestDetailsValue}>
-                  {formatDate(guest.departure_time)}
+                  {formatDate(guest.departureTime)}
                 </Text>
               </View>
             </View>
           )}
         </View>
       </ScrollView>
+      {/* Arrival Time Modal */}
+      <Modal
+        visible={showArrivalModal}
+        transparent
+        animationType="slide"
+        onRequestClose={handleArrivalModalCancel}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0,0,0,0.4)',
+          }}>
+          <View
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: 16,
+              padding: 24,
+              width: '85%',
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: fonts.semibold,
+                marginBottom: 16,
+              }}>
+              Select Arrival Time
+            </Text>
+            <DateTimeInput
+              label="Arrival Time"
+              value={arrivalTime}
+              onChange={setArrivalTime}
+              mode="datetime"
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                marginTop: 16,
+              }}>
+              <TouchableOpacity
+                onPress={handleArrivalModalCancel}
+                style={{marginRight: 16}}>
+                <Text style={{color: colors.grayFont, fontSize: 16}}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleArrivalModalSubmit}>
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontSize: 16,
+                    fontFamily: fonts.semibold,
+                  }}>
+                  Submit
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/* Departure Time Modal */}
+      <Modal
+        visible={showDepartureModal}
+        transparent
+        animationType="slide"
+        onRequestClose={handleDepartureModalCancel}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0,0,0,0.4)',
+          }}>
+          <View
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: 16,
+              padding: 24,
+              width: '85%',
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: fonts.semibold,
+                marginBottom: 16,
+              }}>
+              Select Departure Time
+            </Text>
+            <DateTimeInput
+              label="Departure Time"
+              value={departureTime}
+              onChange={setDepartureTime}
+              mode="datetime"
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                marginTop: 16,
+              }}>
+              <TouchableOpacity
+                onPress={handleDepartureModalCancel}
+                style={{marginRight: 16}}>
+                <Text style={{color: colors.grayFont, fontSize: 16}}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDepartureModalSubmit}>
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontSize: 16,
+                    fontFamily: fonts.semibold,
+                  }}>
+                  Submit
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

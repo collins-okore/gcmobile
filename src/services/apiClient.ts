@@ -1,19 +1,20 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Platform} from 'react-native';
+// import {Platform} from 'react-native';
 
 // Get the correct base URL based on platform
 const getBaseURL = () => {
   if (process.env.API_BASE_URL) {
     return process.env.API_BASE_URL; // Production/custom environment
   }
+  return 'https://ee2570952fcb.ngrok-free.app/api';
 
   // Development URLs
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:5100'; // Android emulator
-  } else {
-    return 'http://localhost:5100'; // iOS simulator
-  }
+  // if (Platform.OS === 'android') {
+  //   return 'http://10.0.2.2:1337/api'; // Android emulator
+  // } else {
+  //   return 'http://localhost:1337/api'; // iOS simulator
+  // }
 };
 
 // Create a base axios instance with default config
@@ -29,7 +30,11 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async config => {
     const token = await AsyncStorage.getItem('gc-connect-token');
-    if (token) {
+    if (
+      token &&
+      config.url !== '/auth/local/register' &&
+      config.url !== '/auth/local'
+    ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

@@ -22,6 +22,8 @@ import EditResidentProfile from '../screens/Profile/EditProfile';
 import ScanQrCode from '../screens/SecurityGuard/SecurityCheckIn/ScanQrCode';
 import colors from '../themes/colors';
 import ViewVehicle from '../screens/Vehicles/ViewVehicle';
+import ViewResident from '../screens/SecurityGuard/Residents/ViewResident';
+import ViewSecurityGuardVehicle from '../screens/SecurityGuard/Vehicles/ViewSecurityGuardVehicle';
 
 const RootStack = createNativeStackNavigator();
 
@@ -39,15 +41,8 @@ export default function RootNavigator() {
 
   // Get user role and determine if user is Security Guard
   const userRole = user.role?.name;
-  console.log('userRole', userRole);
-  const isSecurityGuard = userRole === 'Security Guard';
 
-  console.log(
-    'RootNavigator: User role detected:',
-    userRole,
-    'isSecurityGuard:',
-    isSecurityGuard,
-  );
+  const isSecurityGuard = userRole === 'Security Guard';
 
   // Security Guard Navigator
   if (isSecurityGuard) {
@@ -86,6 +81,16 @@ export default function RootNavigator() {
         <RootStack.Screen
           name="ScanQrCode"
           component={ScanQrCode}
+          options={{headerShown: false}}
+        />
+        <RootStack.Screen
+          name="ViewResident"
+          component={ViewResident}
+          options={{headerShown: false}}
+        />
+        <RootStack.Screen
+          name="ViewSecurityGuardVehicle"
+          component={ViewSecurityGuardVehicle}
           options={{headerShown: false}}
         />
       </RootStack.Navigator>

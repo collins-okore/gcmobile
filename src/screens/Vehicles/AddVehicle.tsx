@@ -16,17 +16,16 @@ import fonts from '../../themes/fonts';
 import TextInput from '../../components/Common/Textinput/index';
 import Button from '../../components/Common/Button/index';
 import residentVehicleService from '../../services/residentVehicleService';
-import authService from '../../services/authService';
 
 interface VehicleFormData {
-  license_plate: string;
+  licensePlate: string;
   make: string;
   model: string;
   color: string;
 }
 
 interface FormErrors {
-  license_plate?: string;
+  licensePlate?: string;
   make?: string;
   model?: string;
   color?: string;
@@ -36,7 +35,7 @@ const AddVehicle = () => {
   const navigation = useNavigation();
 
   const [formData, setFormData] = useState<VehicleFormData>({
-    license_plate: '',
+    licensePlate: '',
     make: '',
     model: '',
     color: '',
@@ -70,10 +69,10 @@ const AddVehicle = () => {
     const newErrors: FormErrors = {};
 
     // License plate validation (required)
-    if (!formData.license_plate.trim()) {
-      newErrors.license_plate = 'License plate is required';
-    } else if (!validatePlateNumber(formData.license_plate)) {
-      newErrors.license_plate =
+    if (!formData.licensePlate.trim()) {
+      newErrors.licensePlate = 'License plate is required';
+    } else if (!validatePlateNumber(formData.licensePlate)) {
+      newErrors.licensePlate =
         'Please enter a valid plate number (at least 3 characters)';
     }
 
@@ -101,16 +100,12 @@ const AddVehicle = () => {
     setIsLoading(true);
 
     try {
-      // Get user profile to get estate_id
-      const profile = await authService.getProfile();
-
       // Prepare vehicle data
       const vehicleData = {
-        license_plate: formData.license_plate.trim(),
+        licensePlate: formData.licensePlate.trim(),
         make: formData.make.trim(),
         model: formData.model.trim(),
         ...(formData.color.trim() && {color: formData.color.trim()}),
-        estate_id: profile.estate_name || '1', // Use estate_name or fallback
       };
 
       await residentVehicleService.createVehicle(vehicleData);
@@ -199,9 +194,9 @@ const AddVehicle = () => {
               <TextInput
                 label="License Plate"
                 placeholder="Enter plate number (e.g., ABC-123)"
-                value={formData.license_plate}
-                onChangeText={handleInputChange('license_plate')}
-                error={errors.license_plate}
+                value={formData.licensePlate}
+                onChangeText={handleInputChange('licensePlate')}
+                error={errors.licensePlate}
                 required
                 autoCapitalize="characters"
                 testID="license-plate-input"

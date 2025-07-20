@@ -19,21 +19,23 @@ import PhoneInput from '../../components/Common/PhoneInput/index';
 import authService from '../../services/authService';
 
 interface ProfileFormData {
-  first_name: string;
-  last_name: string;
+  id: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
-  phone_country_code: string; // Country code like "KE", "US"
-  phone_calling_code: string; // Calling code like "+254", "+27"
+  phoneCountryCode: string; // Country code like "KE", "US"
+  phoneCallingCode: string; // Calling code like "+254", "+27"
 }
 
 interface FormErrors {
-  first_name?: string;
-  last_name?: string;
+  id?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
-  phone_country_code?: string;
-  phone_calling_code?: string;
+  phoneCountryCode?: string;
+  phoneCallingCode?: string;
 }
 
 const EditProfile = () => {
@@ -41,12 +43,13 @@ const EditProfile = () => {
 
   // Initialize with empty data - will be loaded from API
   const [formData, setFormData] = useState<ProfileFormData>({
-    first_name: '',
-    last_name: '',
+    id: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
-    phone_country_code: 'KE', // Default to Kenya country code
-    phone_calling_code: '+254', // Default to Kenya calling code
+    phoneCountryCode: 'KE', // Default to Kenya country code
+    phoneCallingCode: '+254', // Default to Kenya calling code
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -61,15 +64,15 @@ const EditProfile = () => {
     try {
       setIsLoadingProfile(true);
       const profileData = await authService.getProfile();
-      console.log('Profile Data', profileData);
 
       setFormData({
-        first_name: profileData.first_name || '',
-        last_name: profileData.last_name || '',
+        id: profileData.id,
+        firstName: profileData.firstName || '',
+        lastName: profileData.lastName || '',
         email: profileData.email || '',
         phone: profileData.phone || '',
-        phone_country_code: profileData.phone_country_code || 'KE',
-        phone_calling_code: profileData.phone_calling_code || '+254',
+        phoneCountryCode: profileData.phoneCountryCode || 'KE',
+        phoneCallingCode: profileData.phoneCallingCode || '+254',
       });
     } catch (error) {
       console.error('Failed to load profile:', error);
@@ -111,14 +114,14 @@ const EditProfile = () => {
   const handleCallingCodeChange = (callingCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_calling_code: `+${callingCode}`,
+      phoneCallingCode: `+${callingCode}`,
     }));
   };
 
   const handleCountryCodeChange = (countryCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_country_code: countryCode,
+      phoneCountryCode: countryCode,
     }));
   };
 
@@ -139,17 +142,17 @@ const EditProfile = () => {
     const newErrors: FormErrors = {};
 
     // First name validation (required)
-    if (!formData.first_name.trim()) {
-      newErrors.first_name = 'First name is required';
-    } else if (formData.first_name.trim().length < 2) {
-      newErrors.first_name = 'First name must be at least 2 characters';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    } else if (formData.firstName.trim().length < 2) {
+      newErrors.firstName = 'First name must be at least 2 characters';
     }
 
     // Last name validation (required)
-    if (!formData.last_name.trim()) {
-      newErrors.last_name = 'Last name is required';
-    } else if (formData.last_name.trim().length < 2) {
-      newErrors.last_name = 'Last name must be at least 2 characters';
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    } else if (formData.lastName.trim().length < 2) {
+      newErrors.lastName = 'Last name must be at least 2 characters';
     }
 
     // Email validation (required)
@@ -178,13 +181,14 @@ const EditProfile = () => {
     try {
       // Prepare profile data (exclude phone fields if phone is empty)
       const profileData = {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
+        id: formData.id,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
         email: formData.email.trim(),
         ...(formData.phone.trim() && {
           phone: formData.phone.trim(),
-          phone_country_code: formData.phone_country_code, // "KE", "US", etc.
-          phone_calling_code: formData.phone_calling_code, // "+254", "+27", etc.
+          phoneCountryCode: formData.phoneCountryCode, // "KE", "US", etc.
+          phoneCallingCode: formData.phoneCallingCode, // "+254", "+27", etc.
         }),
       };
 
@@ -280,9 +284,9 @@ const EditProfile = () => {
               <TextInput
                 label="First Name"
                 placeholder="Enter your first name"
-                value={formData.first_name}
-                onChangeText={handleInputChange('first_name')}
-                error={errors.first_name}
+                value={formData.firstName}
+                onChangeText={handleInputChange('firstName')}
+                error={errors.firstName}
                 required
                 autoCapitalize="words"
                 testID="first-name-input"
@@ -291,9 +295,9 @@ const EditProfile = () => {
               <TextInput
                 label="Last Name"
                 placeholder="Enter your last name"
-                value={formData.last_name}
-                onChangeText={handleInputChange('last_name')}
-                error={errors.last_name}
+                value={formData.lastName}
+                onChangeText={handleInputChange('lastName')}
+                error={errors.lastName}
                 required
                 autoCapitalize="words"
                 testID="last-name-input"
@@ -318,10 +322,10 @@ const EditProfile = () => {
                 onChangeText={handlePhoneChange}
                 onChangeCallingCode={handleCallingCodeChange}
                 onChangeCountryCode={handleCountryCodeChange}
-                defaultCode={formData.phone_country_code || 'KE'}
+                defaultCode={formData.phoneCountryCode || 'KE'}
                 error={errors.phone}
                 testID="phone-input"
-                key={formData.phone_calling_code}
+                key={formData.phoneCallingCode}
               />
             </View>
 

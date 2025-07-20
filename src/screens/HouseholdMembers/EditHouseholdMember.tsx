@@ -18,13 +18,14 @@ import PhoneInput from '../../components/Common/PhoneInput/index';
 import DropdownInput from '../../components/Common/DropdownInput/index';
 import Button from '../../components/Common/Button/index';
 import residentHouseholdMemberService from '../../services/residentHouseholdMemberService';
+import {normalize} from '../../lib/normalize';
 
 interface HouseholdMemberFormData {
   name: string;
   email: string;
   phone: string;
-  phone_country_code: string;
-  phone_calling_code: string;
+  phoneCountryCode: string;
+  phoneCallingCode: string;
   relationship: 'Spouse' | 'Child' | 'Other' | '';
 }
 
@@ -43,8 +44,8 @@ const EditHouseholdMember = () => {
     name: '',
     email: '',
     phone: '',
-    phone_country_code: 'KE',
-    phone_calling_code: '+254',
+    phoneCountryCode: 'KE',
+    phoneCallingCode: '+254',
     relationship: '',
   });
 
@@ -65,14 +66,14 @@ const EditHouseholdMember = () => {
       const response =
         await residentHouseholdMemberService.getHouseholdMemberById(memberId);
 
-      const memberData = response;
+      const memberData = normalize(response.data);
 
       setFormData({
         name: memberData.name || '',
         email: memberData.email || '',
         phone: memberData.phone || '',
-        phone_country_code: memberData.phone_country_code || 'KE',
-        phone_calling_code: memberData.phone_calling_code || '+254',
+        phoneCountryCode: memberData.phoneCountryCode || 'KE',
+        phoneCallingCode: memberData.phoneCallingCode || '+254',
         relationship: memberData.relationship || '',
       });
     } catch (error) {
@@ -111,14 +112,14 @@ const EditHouseholdMember = () => {
   const handleCallingCodeChange = (callingCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_calling_code: callingCode,
+      phoneCallingCode: callingCode,
     }));
   };
 
   const handleCountryCodeChange = (countryCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_country_code: countryCode,
+      phoneCountryCode: countryCode,
     }));
   };
 
@@ -185,8 +186,8 @@ const EditHouseholdMember = () => {
         relationship: formData.relationship as 'Spouse' | 'Child' | 'Other',
         ...(formData.phone.trim() && {phone: formData.phone.trim()}),
         ...(formData.email.trim() && {email: formData.email.trim()}),
-        phone_country_code: formData.phone_country_code,
-        phone_calling_code: formData.phone_calling_code,
+        phoneCountryCode: formData.phoneCountryCode,
+        phoneCallingCode: formData.phoneCallingCode,
       };
 
       await residentHouseholdMemberService.updateHouseholdMember(
@@ -287,7 +288,7 @@ const EditHouseholdMember = () => {
                   onChangeText={handlePhoneChange}
                   onChangeCallingCode={handleCallingCodeChange}
                   onChangeCountryCode={handleCountryCodeChange}
-                  defaultCode={formData.phone_country_code}
+                  defaultCode={formData.phoneCountryCode}
                   error={errors.phone}
                   testID="phone-input"
                 />

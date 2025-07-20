@@ -7,7 +7,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import React, {useState, useCallback} from 'react';
-import PastGuestItem from '../../../components/Common/PastGuestItem';
+import PastGuestItem from '../../../components/Guests/PastGuestItem';
 import colors from '../../../themes/colors';
 import fonts from '../../../themes/fonts';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
@@ -31,11 +31,11 @@ const PastGuestTab = () => {
       setError(null);
 
       const response = await securityGuardGuestService.getAllGuests({
-        populate: ['resident', 'estate'],
+        populate: ['resident'],
         filters: {
-          status: {in: ['cancelled', 'departed']},
+          status: {$in: ['cancelled', 'departed']},
         },
-        sort: {updated_at: 'desc'},
+        sort: ['updatedAt:desc'],
         pagination: {
           page: 1,
           pageSize: 100,
@@ -70,11 +70,12 @@ const PastGuestTab = () => {
 
   // Transform data for PastGuestItem component
   const transformedData = pastGuests.map(guest => ({
+    ...guest,
     id: guest.id,
     name: guest.name,
-    date: guest.departure_time || guest.updated_at,
+    date: guest.departureTime || guest.updatedAt,
     purpose: guest.purpose,
-    vehicle_plate: guest.vehicle_license_plate || '',
+    vehiclePlate: guest.vehicleLicensePlate || '',
   }));
 
   // Loading state

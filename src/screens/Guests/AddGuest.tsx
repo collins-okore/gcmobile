@@ -28,8 +28,8 @@ const AddGuest = () => {
     fullName: '',
     idNumber: '',
     phone: '',
-    phone_country_code: 'KE', // Default to Kenya country code
-    phone_calling_code: '+254', // Default to Kenya calling code
+    phoneCountryCode: 'KE', // Default to Kenya country code
+    phoneCallingCode: '+254', // Default to Kenya calling code
     purpose: '',
     arrivalTime: new Date(),
     vehicleLicensePlate: '',
@@ -65,14 +65,14 @@ const AddGuest = () => {
   const handleCallingCodeChange = (callingCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_calling_code: `+${callingCode}`,
+      phoneCallingCode: `+${callingCode}`,
     }));
   };
 
   const handleCountryCodeChange = (countryCode: string) => {
     setFormData(prev => ({
       ...prev,
-      phone_country_code: countryCode,
+      phoneCountryCode: countryCode,
     }));
   };
 
@@ -112,29 +112,27 @@ const AddGuest = () => {
         name: formData.fullName.trim(),
         ...(formData.phone.trim() && {
           phone: formData.phone.trim(),
-          phone_country_code: formData.phone_country_code, // "KE", "US", etc.
-          phone_calling_code: formData.phone_calling_code, // "+254", "+27", etc.
+          phoneCountryCode: formData.phoneCountryCode, // "KE", "US", etc.
+          phoneCallingCode: formData.phoneCallingCode, // "+254", "+27", etc.
         }),
         ...(formData.idNumber.trim() && {
-          id_number: formData.idNumber.trim(),
+          idNumber: formData.idNumber.trim(),
         }),
         purpose: formData.purpose,
-        arrival_time: formData.arrivalTime.toISOString(),
+        arrivalTime: formData.arrivalTime.toISOString(),
         ...(formData.vehicleLicensePlate.trim() && {
-          vehicle_license_plate: formData.vehicleLicensePlate.trim(),
+          vehicleLicensePlate: formData.vehicleLicensePlate.trim(),
         }),
         ...(formData.vehicleMake.trim() && {
-          vehicle_make: formData.vehicleMake.trim(),
+          vehicleMake: formData.vehicleMake.trim(),
         }),
         ...(formData.vehicleModel.trim() && {
-          vehicle_model: formData.vehicleModel.trim(),
+          vehicleModel: formData.vehicleModel.trim(),
         }),
         ...(formData.vehicleColor.trim() && {
-          vehicle_color: formData.vehicleColor.trim(),
+          vehicleColor: formData.vehicleColor.trim(),
         }),
       };
-
-      console.log('Guest Data', guestData);
 
       await residentGuestService.createResidentGuest(guestData);
 
@@ -254,10 +252,10 @@ const AddGuest = () => {
                 onChangeText={handlePhoneChange}
                 onChangeCallingCode={handleCallingCodeChange}
                 onChangeCountryCode={handleCountryCodeChange}
-                defaultCode={formData.phone_country_code || 'KE'}
+                defaultCode={formData.phoneCountryCode || 'KE'}
                 error={errors.phone}
                 testID="phone-input"
-                key={formData.phone_calling_code}
+                key={formData.phoneCallingCode}
               />
             </View>
 

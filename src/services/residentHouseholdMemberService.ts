@@ -7,11 +7,11 @@ export interface HouseholdMember {
   name: string;
   relationship: 'Spouse' | 'Child' | 'Other';
   phone: string;
-  phone_country_code: string;
-  phone_calling_code: string;
+  phoneCountryCode: string;
+  phoneCallingCode: string;
   email?: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Pagination parameters interface (same as in other services)
@@ -46,13 +46,14 @@ const getAllHouseholdMembers = async (params?: PaginationParams) => {
         sort: params.sort,
         pagination: params.pagination,
       },
-      {encodeValuesOnly: true},
+      {encodeValuesOnly: false},
     )}`;
   }
 
   const response = await apiClient.get(
     `${RESIDENT_HOUSEHOLD_MEMBER_URLS.GET_ALL}${queryString}`,
   );
+
   return response.data;
 };
 
@@ -84,14 +85,17 @@ const createHouseholdMember = async (data: {
   name: string;
   relationship: 'Spouse' | 'Child' | 'Other';
   phone?: string;
-  phone_country_code?: string;
-  phone_calling_code?: string;
+  phoneCountryCode?: string;
+  phoneCallingCode?: string;
   email?: string;
 }) => {
   const response = await apiClient.post(RESIDENT_HOUSEHOLD_MEMBER_URLS.CREATE, {
-    ...data,
+    data: {
+      ...data,
+    },
   });
-  return response.data;
+
+  return response;
 };
 
 // Update household member
@@ -101,15 +105,17 @@ const updateHouseholdMember = async (
     name?: string;
     relationship?: 'Spouse' | 'Child' | 'Other';
     phone?: string;
-    phone_country_code?: string;
-    phone_calling_code?: string;
+    phoneCountryCode?: string;
+    phoneCallingCode?: string;
     email?: string;
   },
 ) => {
   const response = await apiClient.put(
     RESIDENT_HOUSEHOLD_MEMBER_URLS.UPDATE(id),
     {
-      ...data,
+      data: {
+        ...data,
+      },
     },
   );
   return response.data;

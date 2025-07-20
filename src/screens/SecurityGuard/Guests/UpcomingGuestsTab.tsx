@@ -9,11 +9,12 @@ import {
 import React, {useState, useCallback} from 'react';
 import colors from '../../../themes/colors';
 import fonts from '../../../themes/fonts';
-import UpcomingGuestItem from '../../../components/Common/UpcomingGuestItem';
+import UpcomingGuestItem from '../../../components/Guests/UpcomingGuestItem';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import securityGuardGuestService, {
   SecurityGuardGuest,
 } from '../../../services/securityGuardGuestService';
+import {normalize} from '../../../lib/normalize';
 
 const ItemSeparator = () => <View style={styles.separator} />;
 
@@ -31,22 +32,20 @@ const UpcomingGuestsTab = () => {
       setError(null);
 
       const response = await securityGuardGuestService.getAllGuests({
-        populate: ['resident', 'estate'],
+        populate: ['resident'],
         filters: {
           status: {
-            in: ['pending', 'arrived'], // Only upcoming guests
+            $in: ['pending', 'arrived'], // Only upcoming guests
           },
         },
-        sort: {
-          updated_at: 'desc',
-        },
+        sort: ['updatedAt:desc'],
         pagination: {
           page: 1,
           pageSize: 100,
         },
       });
 
-      setGuests(response.data);
+      setGuests(normalize(response.data));
     } catch (err: any) {
       console.error('Error fetching guests:', err);
       setError('Failed to load guests. Please try again.');
@@ -74,11 +73,12 @@ const UpcomingGuestsTab = () => {
 
   // Transform guest data to match UpcomingGuestItem expected format
   const transformedGuests = guests.map(guest => ({
+    ...guest,
     id: guest.id,
     name: guest.name,
-    date: guest.arrival_time,
+    date: guest.arrivalTime,
     purpose: guest.purpose,
-    vehicle_plate: guest.vehicle_license_plate || 'N/A',
+    vehiclePlate: guest.vehicleLicensePlate || 'N/A',
   }));
 
   if (loading) {
@@ -110,16 +110,18 @@ const UpcomingGuestsTab = () => {
     <View style={styles.container}>
       <FlatList
         data={transformedGuests}
-        renderItem={({item}) => (
-          <UpcomingGuestItem
-            guest={item}
-            onPressItem={() => {
-              (navigation as any).navigate('ViewSecurityGuardGuest', {
-                guestId: item.id,
-              });
-            }}
-          />
-        )}
+        renderItem={({item}) => {
+          return (
+            <UpcomingGuestItem
+              guest={item}
+              onPressItem={() => {
+                (navigation as any).navigate('ViewSecurityGuardGuest', {
+                  guestId: item.id,
+                });
+              }}
+            />
+          );
+        }}
         keyExtractor={item => item.id}
         ItemSeparatorComponent={ItemSeparator}
         contentContainerStyle={styles.listContent}

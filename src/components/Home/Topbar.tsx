@@ -11,20 +11,20 @@ const Topbar = () => {
 
   // Format user name
   const userName = user
-    ? `${user.first_name}${user.last_name ? ` ${user.last_name}` : ''}`.trim()
+    ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`.trim()
     : 'Guest';
 
   // Format address - prioritize resident data, fallback to direct properties
   const userAddress = user
-    ? user.resident?.house_number && user.resident?.block_court
-      ? `House ${user.resident.house_number}, Block ${user.resident.block_court}`
-      : user.house_number && user.block
-      ? `House ${user.house_number}, Block ${user.block}`
+    ? user.resident?.houseNumber && user.resident?.blockCourt
+      ? `House ${user.resident.houseNumber}, Block ${user.resident.blockCourt}`
+      : user.houseNumber && user.blockCourt
+      ? `House ${user.houseNumber}, Block ${user.blockCourt}`
       : 'Address not available'
     : 'Loading address...';
 
   // Estate name
-  const estateName = user?.estate_name || 'Estate';
+  const estateName = user?.estateName || 'Estate';
 
   return (
     <>

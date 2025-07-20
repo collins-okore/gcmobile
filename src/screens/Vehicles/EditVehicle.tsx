@@ -19,16 +19,17 @@ import Button from '../../components/Common/Button/index';
 import residentVehicleService, {
   Vehicle,
 } from '../../services/residentVehicleService';
+import {normalize} from '../../lib/normalize';
 
 interface VehicleFormData {
-  license_plate: string;
+  licensePlate: string;
   make: string;
   model: string;
   color: string;
 }
 
 interface FormErrors {
-  license_plate?: string;
+  licensePlate?: string;
   make?: string;
   model?: string;
   color?: string;
@@ -41,7 +42,7 @@ const EditVehicle = () => {
 
   const [_vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [formData, setFormData] = useState<VehicleFormData>({
-    license_plate: '',
+    licensePlate: '',
     make: '',
     model: '',
     color: '',
@@ -61,12 +62,12 @@ const EditVehicle = () => {
         populate: ['resident', 'estate'],
       });
 
-      const vehicleData = response.data;
+      const vehicleData = normalize(response.data);
       setVehicle(vehicleData);
 
       // Pre-populate form with existing data
       setFormData({
-        license_plate: vehicleData.license_plate || '',
+        licensePlate: vehicleData.licensePlate || '',
         make: vehicleData.make || '',
         model: vehicleData.model || '',
         color: vehicleData.color || '',
@@ -116,10 +117,10 @@ const EditVehicle = () => {
     const newErrors: FormErrors = {};
 
     // License plate validation (required)
-    if (!formData.license_plate.trim()) {
-      newErrors.license_plate = 'License plate is required';
-    } else if (!validatePlateNumber(formData.license_plate)) {
-      newErrors.license_plate =
+    if (!formData.licensePlate.trim()) {
+      newErrors.licensePlate = 'License plate is required';
+    } else if (!validatePlateNumber(formData.licensePlate)) {
+      newErrors.licensePlate =
         'Please enter a valid plate number (at least 3 characters)';
     }
 
@@ -149,7 +150,7 @@ const EditVehicle = () => {
     try {
       // Prepare update data
       const updateData = {
-        license_plate: formData.license_plate.trim(),
+        licensePlate: formData.licensePlate.trim(),
         make: formData.make.trim(),
         model: formData.model.trim(),
         ...(formData.color.trim() && {color: formData.color.trim()}),
@@ -289,9 +290,9 @@ const EditVehicle = () => {
               <TextInput
                 label="License Plate"
                 placeholder="Enter plate number (e.g., ABC-123)"
-                value={formData.license_plate}
-                onChangeText={handleInputChange('license_plate')}
-                error={errors.license_plate}
+                value={formData.licensePlate}
+                onChangeText={handleInputChange('licensePlate')}
+                error={errors.licensePlate}
                 required
                 autoCapitalize="characters"
                 testID="license-plate-input"

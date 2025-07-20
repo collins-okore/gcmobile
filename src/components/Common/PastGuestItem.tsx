@@ -10,7 +10,7 @@ interface Guest {
   name: string;
   date: string;
   purpose: string;
-  vehicle_plate: string;
+  vehiclePlate: string;
 }
 
 interface PastGuestItemProps {
@@ -47,7 +47,7 @@ const PastGuestItem: React.FC<PastGuestItemProps> = ({guest, onPressItem}) => {
       </View>
       <View style={styles.right}>
         <View style={styles.plateContainer}>
-          <Text style={styles.vehiclePlate}>{guest.vehicle_plate}</Text>
+          <Text style={styles.vehiclePlate}>{guest.vehiclePlate}</Text>
         </View>
       </View>
     </TouchableOpacity>

@@ -26,11 +26,7 @@ const AuthTestExample = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              console.log('Testing logout functionality...');
               await logout();
-              console.log(
-                'Logout successful - AuthStateNavigator should switch to AuthNavigator',
-              );
             } catch (error) {
               console.error('Logout test failed:', error);
             }

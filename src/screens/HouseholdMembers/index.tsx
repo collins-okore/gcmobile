@@ -22,6 +22,7 @@ import fonts from '../../themes/fonts';
 import residentHouseholdMemberService, {
   HouseholdMember,
 } from '../../services/residentHouseholdMemberService';
+import {normalize} from '../../lib/normalize';
 
 const HouseholdMembers = () => {
   const navigation = useNavigation();
@@ -45,14 +46,12 @@ const HouseholdMembers = () => {
         await residentHouseholdMemberService.getAllHouseholdMembers({
           pagination: {
             page: 1,
-            pageSize: 100, // Get all household members
+            pageSize: 10, // Get all household members
           },
-          sort: {
-            updated_at: 'desc',
-          },
+          sort: ['updatedAt:desc'],
         });
 
-      setHouseholdMembers(response.data || []);
+      setHouseholdMembers(normalize(response.data) || []);
     } catch (error: any) {
       console.error('Error fetching household members:', error);
       const errorMessage =

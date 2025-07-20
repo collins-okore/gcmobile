@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from './apiClient';
 import apiUrls from './apiUrls';
+import qs from 'qs';
 
 // Types
 interface LoginCredentials {
@@ -9,34 +10,54 @@ interface LoginCredentials {
 }
 
 interface RegisterData {
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
+  username: string;
+  phone?: string;
+  phoneCountryCode?: string;
+  phoneCallingCode?: string;
   password: string;
 }
 
 interface AuthResponse {
   user: {
     id: string;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     phone?: string;
-    role: {
-      name: string;
-    };
+    phoneCountryCode?: string;
+    phoneCallingCode?: string;
   };
-  access_token: string;
+  jwt: string;
 }
 
 interface ProfileData {
-  first_name: string;
-  last_name: string;
+  id: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone?: string;
-  phone_country_code?: string; // Country code like "KE", "US"
-  phone_calling_code?: string; // Calling code like "+254", "+27"
+  phoneCountryCode?: string; // Country code like "KE", "US"
+  phoneCallingCode?: string; // Calling code like "+254", "+27"
+  resident?: {
+    id: string;
+    houseNumber: string;
+    blockCourt: string;
+    estate?: {
+      id: string;
+      name: string;
+    };
+  };
+  role?: {
+    id: string;
+    name: string;
+  };
+  estateManager?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface PasswordChangeData {
@@ -45,33 +66,44 @@ interface PasswordChangeData {
 }
 
 interface ProfileResponse {
-  avatar_url: string | null;
+  avatarUrl: string | null;
   block: string;
   blocked: boolean;
-  created_at: string;
   email: string;
-  estateManager: string[];
-  estate_name: string;
-  first_name: string;
-  house_number: string;
+  estateManager: {
+    id: string;
+    name: string;
+  };
+  firstName: string;
   id: string;
-  last_login: string;
-  last_name: string;
+  lastLoginTime: string;
+  lastName: string;
   phone: string;
-  phone_country_code?: string;
-  phone_calling_code?: string;
+  phoneCountryCode?: string;
+  phoneCallingCode?: string;
   resident: {
     id: string;
-    house_number: string;
-    block_court: string;
+    houseNumber: string;
+    blockCourt: string;
+    estate?: {
+      id: string;
+      name: string;
+    };
   };
   role: {
     id: string;
     name: string;
   };
-  role_id: string;
-  securityGuard: null;
-  updated_at: string;
+  securityGuard: {
+    id: string;
+    name: string;
+    estate?: {
+      id: string;
+      name: string;
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Auth service functions
@@ -80,10 +112,13 @@ const authService = {
   login: async (credentials: LoginCredentials) => {
     const response = await apiClient.post<AuthResponse>(
       apiUrls.AUTH_URLS.LOGIN,
-      credentials,
+      {
+        identifier: credentials.email,
+        password: credentials.password,
+      },
     );
     // Store token and user in AsyncStorage
-    await AsyncStorage.setItem('gc-connect-token', response.data?.access_token);
+    await AsyncStorage.setItem('gc-connect-token', response.data?.jwt);
     await AsyncStorage.setItem(
       'gc-connect-user',
       JSON.stringify(response.data.user),
@@ -97,6 +132,7 @@ const authService = {
       apiUrls.AUTH_URLS.REGISTER,
       userData,
     );
+
     return response.data;
   },
 
@@ -132,16 +168,27 @@ const authService = {
 
   // Get user profile
   getProfile: async () => {
+    const queryString = qs.stringify({
+      populate: [
+        'role',
+        'estateManager',
+        'resident',
+        'resident.estate',
+        'securityGuard',
+        'securityGuard.estate',
+      ],
+    });
     const response = await apiClient.get<ProfileResponse>(
-      apiUrls.AUTH_URLS.GET_PROFILE,
+      apiUrls.AUTH_URLS.GET_PROFILE + `?${queryString}`,
     );
+
     return response.data;
   },
 
   // Update user profile
   updateProfile: async (profileData: ProfileData) => {
     const response = await apiClient.put(
-      apiUrls.AUTH_URLS.GET_PROFILE,
+      apiUrls.AUTH_URLS.UPDATE_PROFILE + `/${profileData.id}`,
       profileData,
     );
 

@@ -11,11 +11,13 @@ import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import {ArrowLeftIcon} from 'react-native-heroicons/outline';
-import {QrCodeIcon} from 'react-native-heroicons/solid';
 import colors from '../../../themes/colors';
 import fonts from '../../../themes/fonts';
 import Button from '../../../components/Common/Button';
 import TextInputComponent from '../../../components/Common/Textinput';
+import securityGuardGuestService from '../../../services/securityGuardGuestService';
+import {normalize} from '../../../lib/normalize';
+import {Camera, CameraType} from 'react-native-camera-kit';
 
 const ScanQrCode = () => {
   const navigation = useNavigation();
@@ -27,29 +29,38 @@ const ScanQrCode = () => {
     (navigation as any).goBack();
   };
 
-  const handleQRCodeScanned = (data: string) => {
+  const handleQRCodeScanned = async (data: string) => {
+    if (!data.trim()) {
+      Alert.alert('Error', 'Invalid QR code data');
+      return;
+    }
+
     setIsProcessing(true);
 
-    // Simulate processing the QR code
-    setTimeout(() => {
+    try {
+      const response = await securityGuardGuestService.verifyPassCode(
+        data.trim(),
+      );
+      const responseData = normalize(response.data);
+
+      setIsProcessing(false);
+      if (responseData && responseData.guestId) {
+        (navigation as any).navigate('ViewSecurityGuardGuest', {
+          guestId: responseData.guestId,
+        });
+      } else {
+        Alert.alert('Invalid Code', 'No guest found for this code.');
+      }
+    } catch (error: any) {
       setIsProcessing(false);
       Alert.alert(
-        'QR Code Scanned',
-        `Invitation verified successfully!\nGuest: John Doe\nCode: ${data}`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navigate back or to guest details
-              handleBackPress();
-            },
-          },
-        ],
+        'Verification Failed',
+        error?.message || 'Could not verify code. Please try again.',
       );
-    }, 2000);
+    }
   };
 
-  const handleManualCodeSubmit = () => {
+  const handleManualCodeSubmit = async () => {
     if (!manualCode.trim()) {
       Alert.alert('Error', 'Please enter a valid invitation code');
       return;
@@ -57,30 +68,34 @@ const ScanQrCode = () => {
 
     setIsProcessing(true);
 
-    // Simulate processing the manual code
-    setTimeout(() => {
+    try {
+      const response = await securityGuardGuestService.verifyPassCode(
+        manualCode.trim(),
+      );
+      const data = normalize(response.data);
+
+      setIsProcessing(false);
+      setManualCode('');
+      if (data && data.guestId) {
+        (navigation as any).navigate('ViewSecurityGuardGuest', {
+          guestId: data.guestId,
+        });
+      } else {
+        Alert.alert('Invalid Code', 'No guest found for this code.');
+      }
+    } catch (error: any) {
       setIsProcessing(false);
       Alert.alert(
-        'Code Verified',
-        `Invitation verified successfully!\nGuest: Jane Smith\nCode: ${manualCode}`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setManualCode('');
-              handleBackPress();
-            },
-          },
-        ],
+        'Verification Failed',
+        error?.message || 'Could not verify code. Please try again.',
       );
-    }, 2000);
+    }
   };
 
-  const simulateQRScan = () => {
-    // Simulate QR code detection for demo purposes
-    const demoCode =
-      'INV-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    handleQRCodeScanned(demoCode);
+  const onReadCode = (event: any) => {
+    if (!isProcessing) {
+      handleQRCodeScanned(event.nativeEvent.codeStringValue);
+    }
   };
 
   return (
@@ -119,20 +134,21 @@ const ScanQrCode = () => {
                         <Text style={styles.processingText}>Processing...</Text>
                       </View>
                     ) : (
-                      <>
-                        <QrCodeIcon size={80} color={colors.grayIconColor} />
-                        <Text style={styles.scannerText}>
-                          Align QR code within frame
-                        </Text>
-                        {/* Demo button for testing */}
-                        <TouchableOpacity
-                          style={styles.demoButton}
-                          onPress={simulateQRScan}>
-                          <Text style={styles.demoButtonText}>
-                            Simulate QR Scan
-                          </Text>
-                        </TouchableOpacity>
-                      </>
+                      <Camera
+                        onReadCode={onReadCode}
+                        scanBarcode={true}
+                        cameraType={CameraType.Back}
+                        flashMode="auto"
+                        focusMode="on"
+                        showFrame={true}
+                        laserColor={colors.primary}
+                        frameColor={colors.primary}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: 12,
+                        }}
+                      />
                     )}
                   </View>
 

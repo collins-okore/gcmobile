@@ -6,35 +6,35 @@ export interface ResidentGuest {
   id: string;
   name: string;
   phone?: string;
-  phone_country_code?: string;
-  phone_calling_code?: string;
-  id_number?: string;
-  vehicle_license_plate?: string;
-  vehicle_make?: string;
-  vehicle_model?: string;
-  vehicle_color?: string;
+  phoneCountryCode?: string;
+  phoneCallingCode?: string;
+  idNumber?: string;
+  vehicleLicensePlate?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleColor?: string;
   purpose: string;
-  arrival_time: string;
-  departure_time?: string;
+  arrivalTime: string;
+  departureTime?: string;
   status: 'pending' | 'arrived' | 'departed' | 'cancelled';
   resident?: {
     id: string;
     user: {
       id: string;
-      first_name: string;
-      last_name: string;
+      firstName: string;
+      lastName: string;
       email: string;
       phone: string;
     };
-    house_number: string;
+    houseNumber: string;
     unit: string;
+    estate?: {
+      id: string;
+      name: string;
+    };
   };
-  estate?: {
-    id: string;
-    name: string;
-  };
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PaginationMeta {
@@ -61,7 +61,7 @@ const getAllResidentGuests = async (params?: PaginationParams) => {
 
   if (params) {
     queryString = qs.stringify(params, {
-      encodeValuesOnly: true, // prettify URL
+      encodeValuesOnly: false, // prettify URL
     });
   }
 
@@ -86,7 +86,7 @@ const getResidentGuestById = async (id: string, params?: PaginationParams) => {
 
   if (params) {
     queryString = qs.stringify(params, {
-      encodeValuesOnly: true,
+      encodeValuesOnly: false,
     });
   }
 
@@ -96,7 +96,7 @@ const getResidentGuestById = async (id: string, params?: PaginationParams) => {
         queryString ? `?${queryString}` : ''
       }`,
     );
-    console.log('Response data:', response.data);
+
     return response;
   } catch (error) {
     console.error(`Error fetching resident guest with ID ${id}:`, error);
@@ -108,18 +108,22 @@ const getResidentGuestById = async (id: string, params?: PaginationParams) => {
 const createResidentGuest = async (data: {
   name: string;
   phone?: string;
-  phone_country_code?: string;
-  phone_calling_code?: string;
-  id_number?: string;
-  vehicle_license_plate?: string;
-  vehicle_make?: string;
-  vehicle_model?: string;
-  vehicle_color?: string;
+  phoneCountryCode?: string;
+  phoneCallingCode?: string;
+  idNumber?: string;
+  vehicleLicensePlate?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleColor?: string;
   purpose: string;
-  arrival_time: string;
+  arrivalTime: string;
 }) => {
   try {
-    const response = await apiClient.post(RESIDENT_GUEST_URLS.CREATE, data);
+    const response = await apiClient.post(RESIDENT_GUEST_URLS.CREATE, {
+      data: {
+        ...data,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error creating resident guest:', error);
@@ -133,21 +137,24 @@ const updateResidentGuest = async (
   data: {
     name?: string;
     phone?: string;
-    phone_country_code?: string;
-    phone_calling_code?: string;
-    id_number?: string;
-    vehicle_license_plate?: string;
-    vehicle_make?: string;
-    vehicle_model?: string;
-    vehicle_color?: string;
+    phoneCountryCode?: string;
+    phoneCallingCode?: string;
+    idNumber?: string;
+    vehicleLicensePlate?: string;
+    vehicleMake?: string;
+    vehicleModel?: string;
+    vehicleColor?: string;
     purpose?: string;
-    arrival_time?: string;
-    departure_time?: string;
+    arrivalTime?: string;
+    departureTime?: string;
   },
 ) => {
   try {
-    console.log('Data', data);
-    const response = await apiClient.put(RESIDENT_GUEST_URLS.UPDATE(id), data);
+    const response = await apiClient.put(RESIDENT_GUEST_URLS.UPDATE(id), {
+      data: {
+        ...data,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error(`Error updating resident guest with ID ${id}:`, error);
@@ -169,7 +176,7 @@ const deleteResidentGuest = async (id: string) => {
 // Mark guest as cancelled
 const markGuestAsCancelled = async (id: string) => {
   try {
-    const response = await apiClient.patch(
+    const response = await apiClient.put(
       `${RESIDENT_GUEST_URLS.UPDATE(id)}/mark-as-cancelled`,
     );
     return response.data;
@@ -180,11 +187,11 @@ const markGuestAsCancelled = async (id: string) => {
 };
 
 // Mark guest as departed with departure time
-const markGuestAsDeparted = async (id: string, departure_time: string) => {
+const markGuestAsDeparted = async (id: string, departureTime: string) => {
   try {
-    const response = await apiClient.post(
+    const response = await apiClient.put(
       `${RESIDENT_GUEST_URLS.UPDATE(id)}/mark-as-departed`,
-      {departure_time},
+      {departureTime},
     );
     return response.data;
   } catch (error) {

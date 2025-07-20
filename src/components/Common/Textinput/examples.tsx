@@ -37,7 +37,7 @@ const TextInputExamples = () => {
 
   const handleValidation =
     (field: string) => (isValid: boolean, error?: string) => {
-      console.log(`${field} validation:`, isValid, error);
+      console.warn(`${field} validation:`, isValid, error);
     };
 
   return (

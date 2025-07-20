@@ -120,7 +120,7 @@ const SignIn = () => {
           text: 'Continue',
           onPress: () => {
             // Navigation will be handled automatically by AuthStateNavigator
-            console.log('User signed in successfully');
+            console.warn('User signed in successfully');
           },
         },
       ]);
