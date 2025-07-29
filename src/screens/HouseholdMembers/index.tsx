@@ -93,9 +93,11 @@ const HouseholdMembers = () => {
   };
 
   const handleEditMember = (member: HouseholdMember) => {
-    (navigation as any).navigate('EditResidentHouseholdMember', {
-      memberId: member.id,
-    });
+    console.log('member', member);
+    console.log('navigation', navigation);
+    // (navigation as any).navigate('EditResidentHouseholdMember', {
+    //   memberId: member.id,
+    // });
   };
 
   const getInitials = (name: string): string => {

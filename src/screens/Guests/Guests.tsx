@@ -37,7 +37,7 @@ const Guests = () => {
       labelStyle={{
         textTransform: 'none', // Prevents automatic uppercase
         fontFamily: fonts.semibold,
-        fontSize: 18,
+        fontSize: 28,
       }}
       activeColor={colors.darkFont}
       inactiveColor={colors.grayFont}

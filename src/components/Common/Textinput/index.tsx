@@ -5,7 +5,6 @@ import {
   TextInput as RNTextInput,
   StyleSheet,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
   TextInputProps as RNTextInputProps,
 } from 'react-native';
@@ -298,21 +297,12 @@ const TextInput = forwardRef<TextInputRef, TextInputProps>(
       </View>
     );
 
-    // Wrap with KeyboardAvoidingView for better UX
-    return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}>
-        {content}
-      </KeyboardAvoidingView>
-    );
+    // Return content directly - KeyboardAvoidingView should be handled at screen level
+    return content;
   },
 );
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
-    flex: 0,
-  },
   container: {
     width: '100%',
     marginBottom: 16,

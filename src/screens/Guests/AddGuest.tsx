@@ -5,6 +5,10 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  Platform,
+  KeyboardAvoidingView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from 'react-native';
 import React, {useState} from 'react';
 import {Toast} from 'toastify-react-native';
@@ -12,8 +16,8 @@ import residentGuestService from '../../services/residentGuestService';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import colors from '../../themes/colors';
 import fonts from '../../themes/fonts';
-import {ArrowLeftIcon} from 'react-native-heroicons/outline';
 import {useNavigation} from '@react-navigation/native';
+import Icon from '../../components/Common/Icon';
 import TextInput from '../../components/Common/Textinput/index';
 import DropdownInput from '../../components/Common/DropdownInput/index';
 import DateTimeInput from '../../components/Common/DateTimeInput/index';
@@ -40,9 +44,15 @@ const AddGuest = () => {
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleBackPress = () => {
     navigation.goBack();
+  };
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    setIsScrolled(scrollY > 0);
   };
 
   const handleInputChange = (field: string) => (value: string | Date) => {
@@ -202,19 +212,27 @@ const AddGuest = () => {
   ];
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
+      <SafeAreaView
+        style={[styles.topBar, isScrolled && styles.topBarWithBorder]}
+        edges={['left', 'right', 'top']}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Icon name="arrow-left" size={23} color={colors.darkFont} />
+        </TouchableOpacity>
+      </SafeAreaView>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
-        <SafeAreaView style={styles.safeArea}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}>
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}>
-              <ArrowLeftIcon size={24} color={colors.darkFont} />
-            </TouchableOpacity>
             <Text style={styles.title}>Add Guest</Text>
             <Text style={styles.subtitle}>
               Register your guest by filling out their details.
@@ -341,7 +359,7 @@ const AddGuest = () => {
           />
         </View>
       </SafeAreaView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -362,27 +380,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 0,
     marginBottom: 24,
+    marginTop: 4,
+  },
+  topBar: {
+    backgroundColor: colors.whiteBg,
+  },
+  topBarWithBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
   backButton: {
     paddingVertical: 8,
-    paddingHorizontal: 0,
+    paddingBottom: 10,
+    paddingLeft: 16,
+    paddingRight: 16,
     alignSelf: 'flex-start',
-    marginBottom: 8,
   },
   title: {
     fontSize: 24,
     fontFamily: fonts.bold,
     color: colors.darkFont,
-    marginLeft: 4,
   },
   subtitle: {
     fontSize: 16,
     fontFamily: fonts.regular,
     color: colors.grayFont,
-    marginLeft: 4,
     marginTop: 4,
   },
   formContainer: {

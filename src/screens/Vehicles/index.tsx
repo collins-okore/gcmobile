@@ -90,17 +90,20 @@ const Vehicles = () => {
     navigation.navigate('AddResidentVehicle' as never);
   };
 
-  const handleVehiclePress = (vehicle: Vehicle) => {
-    (navigation as any).navigate('ViewResidentVehicle', {
-      vehicleId: vehicle.id,
-    });
-  };
+  // const handleVehiclePress = (vehicle: Vehicle) => {
+  //   (navigation as any).navigate('ViewResidentVehicle', {
+  //     vehicleId: vehicle.id,
+  //   });
+  // };
 
   const renderVehicleItem = ({item}: {item: Vehicle}) => (
     <TouchableOpacity
       style={styles.vehicleItem}
       activeOpacity={0.7}
-      onPress={() => handleVehiclePress(item)}>
+      onPress={() => {
+        console.log('item', item);
+        // handleVehiclePress(item);
+      }}>
       {/* Vehicle Avatar - Square Gray Background */}
       <View style={styles.vehicleAvatar}>
         <TruckIcon size={36} color={colors.grayIconColor} />

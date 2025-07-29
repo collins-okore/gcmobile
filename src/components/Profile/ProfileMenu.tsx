@@ -3,14 +3,8 @@ import React from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {useAuth} from '../../contexts/AuthContext';
 import colors from '../../themes/colors';
-import {
-  UserIcon,
-  ChevronRightIcon,
-  UserGroupIcon,
-  TruckIcon,
-  ArrowLeftStartOnRectangleIcon,
-} from 'react-native-heroicons/outline';
 import fonts from '../../themes/fonts';
+import Icon from '../../components/Common/Icon';
 
 const ProfileMenu = () => {
   const navigation = useNavigation();
@@ -65,11 +59,13 @@ const ProfileMenu = () => {
       <View style={styles.container}>
         <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
           <View style={styles.left}>
-            <UserIcon color={colors.darkFont} size={24} />
+            <View style={styles.iconContainer}>
+              <Icon name="user-circle" size={20} color={colors.darkFont} />
+            </View>
             <Text style={styles.menuItemText}>Edit Profile Info</Text>
           </View>
           <View style={styles.right}>
-            <ChevronRightIcon color={colors.darkFont} size={24} />
+            <Icon name="chevron-right" color={colors.darkFont} size={18} />
           </View>
         </TouchableOpacity>
         <View style={styles.menuItemSeparator} />
@@ -77,21 +73,25 @@ const ProfileMenu = () => {
           style={styles.menuItem}
           onPress={handleHouseholdMembers}>
           <View style={styles.left}>
-            <UserGroupIcon color={colors.darkFont} size={24} />
+            <View style={styles.iconContainer}>
+              <Icon name="user-friends" size={20} color={colors.darkFont} />
+            </View>
             <Text style={styles.menuItemText}>Household Members</Text>
           </View>
           <View style={styles.right}>
-            <ChevronRightIcon color={colors.darkFont} size={24} />
+            <Icon name="chevron-right" color={colors.darkFont} size={18} />
           </View>
         </TouchableOpacity>
         <View style={styles.menuItemSeparator} />
         <TouchableOpacity style={styles.menuItem} onPress={handleVehicles}>
           <View style={styles.left}>
-            <TruckIcon color={colors.darkFont} size={24} />
+            <View style={styles.iconContainer}>
+              <Icon name="car" size={20} color={colors.darkFont} />
+            </View>
             <Text style={styles.menuItemText}>My Vehicles</Text>
           </View>
           <View style={styles.right}>
-            <ChevronRightIcon color={colors.darkFont} size={24} />
+            <Icon name="chevron-right" color={colors.darkFont} size={18} />
           </View>
         </TouchableOpacity>
       </View>
@@ -101,19 +101,23 @@ const ProfileMenu = () => {
           onPress={handleSignOut}
           disabled={isLoading}>
           <View style={styles.left}>
-            <ArrowLeftStartOnRectangleIcon
-              color={isLoading ? colors.grayFont : colors.darkFont}
-              size={24}
-            />
+            <View style={styles.iconContainer}>
+              <Icon
+                name="sign-out"
+                size={20}
+                color={isLoading ? colors.grayFont : colors.darkFont}
+              />
+            </View>
             <Text
               style={[styles.menuItemText, isLoading && styles.disabledText]}>
               {isLoading ? 'Signing Out...' : 'Sign Out'}
             </Text>
           </View>
           <View style={styles.right}>
-            <ChevronRightIcon
+            <Icon
+              name="chevron-right"
               color={isLoading ? colors.grayFont : colors.darkFont}
-              size={24}
+              size={18}
             />
           </View>
         </TouchableOpacity>
@@ -129,6 +133,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
     marginTop: 8,
+    borderRadius: 16,
   },
   menuItem: {
     flexDirection: 'row',
@@ -137,7 +142,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   menuItemText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: fonts.regular,
     color: colors.darkFont,
     marginLeft: 16,
@@ -158,6 +163,11 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     color: colors.grayFont,
+  },
+  iconContainer: {
+    width: 30,
+    // justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

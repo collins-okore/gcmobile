@@ -62,11 +62,13 @@ const GuestItem = ({
       </View>
     </View>
     <View style={styles.right}>
-      {item.vehicleLicensePlate && (
-        <View style={styles.plateContainer}>
-          <Text style={styles.vehiclePlate}>{item.vehicleLicensePlate}</Text>
-        </View>
-      )}
+      <View style={styles.plateContainer}>
+        <Text style={styles.vehiclePlate}>
+          {item.vehicleLicensePlate && item.vehicleLicensePlate.trim()
+            ? item.vehicleLicensePlate.toUpperCase()
+            : 'No Vehicle'}
+        </Text>
+      </View>
     </View>
   </TouchableOpacity>
 );

@@ -66,6 +66,7 @@ const UpcomingGuests = () => {
     date: guest.arrivalTime,
     purpose: guest.purpose,
     vehiclePlate: guest.vehicleLicensePlate || 'N/A',
+    status: guest.status,
   }));
 
   // Loading state

@@ -17,10 +17,13 @@ import {
 import colors from '../../themes/colors';
 import GuestsScreen from '../../screens/Guests/GuestsStack';
 import fonts from '../../themes/fonts';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
 const ResidentTabNavigator = () => {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -33,6 +36,10 @@ const ResidentTabNavigator = () => {
             android: fonts.regular,
           }),
           fontSize: 15,
+        },
+        tabBarStyle: {
+          paddingBottom: insets.bottom + 10,
+          marginBottom: Platform.OS === 'android' ? 10 : 0,
         },
       }}>
       <Tab.Screen

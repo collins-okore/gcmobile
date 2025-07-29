@@ -2,7 +2,7 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import React from 'react';
 import colors from '../../themes/colors';
 import fonts from '../../themes/fonts';
-import {PlusIcon} from 'react-native-heroicons/solid';
+import Icon from '../Common/Icon';
 import {useNavigation} from '@react-navigation/native';
 
 const TopBar = () => {
@@ -17,7 +17,7 @@ const TopBar = () => {
       <Text style={styles.title}>Guests</Text>
 
       <TouchableOpacity style={styles.addButton} onPress={handleAddGuest}>
-        <PlusIcon color={colors.darkFont} size={28} />
+        <Icon name="plus" size={26} color={colors.darkFont} />
       </TouchableOpacity>
     </View>
   );
@@ -29,16 +29,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     alignContent: 'center',
-    padding: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    paddingHorizontal: 0,
     backgroundColor: colors.whiteBg,
   },
   title: {
     fontSize: 24,
     fontFamily: fonts.bold,
     color: colors.darkFont,
+    paddingLeft: 16,
   },
   addButton: {
     padding: 0,
+    paddingRight: 16,
+    paddingLeft: 16,
+    paddingVertical: 10,
   },
 });
 

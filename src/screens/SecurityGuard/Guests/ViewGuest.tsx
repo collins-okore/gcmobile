@@ -9,7 +9,7 @@ import {
   Alert,
   Modal, // <-- Add Modal import
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {ArrowLeftIcon} from 'react-native-heroicons/outline';
 import {
   useNavigation,
@@ -78,14 +78,7 @@ const ViewGuest = () => {
     }
   }, [guestId]);
 
-  // Fetch guest data on component mount
-  useEffect(() => {
-    if (guestId) {
-      fetchGuest();
-    }
-  }, [guestId, fetchGuest]);
-
-  // Auto-refresh when screen comes into focus
+  // Fetch guest data on component mount and auto-refresh when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       if (guestId) {
@@ -494,7 +487,10 @@ const ViewGuest = () => {
                   <View style={styles.guestDetailsItem}>
                     <Text style={styles.guestDetailsTitle}>License Plate</Text>
                     <Text style={styles.guestDetailsValue}>
-                      {guest.vehicleLicensePlate}
+                      {guest.vehicleLicensePlate &&
+                      guest.vehicleLicensePlate.trim()
+                        ? guest.vehicleLicensePlate.toUpperCase()
+                        : 'No Vehicle'}
                     </Text>
                   </View>
                   <View style={styles.divider} />

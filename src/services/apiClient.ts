@@ -7,7 +7,8 @@ const getBaseURL = () => {
   if (process.env.API_BASE_URL) {
     return process.env.API_BASE_URL; // Production/custom environment
   }
-  return 'https://ee2570952fcb.ngrok-free.app/api';
+  return 'https://a9ea0c4a8807.ngrok-free.app/api';
+  // return 'http://192.168.100.47:1337/api';
 
   // Development URLs
   // if (Platform.OS === 'android') {

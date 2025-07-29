@@ -7,6 +7,8 @@ import {
   StatusBar,
   Text,
   ActivityIndicator,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ArrowLeftIcon} from 'react-native-heroicons/outline';
@@ -369,12 +371,16 @@ const EditGuest = () => {
   }
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
         <SafeAreaView style={styles.safeArea}>
           {/* Header */}
           <View style={styles.header}>
@@ -539,7 +545,7 @@ const EditGuest = () => {
           />
         </View>
       </SafeAreaView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -560,28 +566,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 0,
     paddingVertical: 0,
     marginBottom: 24,
   },
   backButton: {
     paddingVertical: 8,
-    paddingHorizontal: 0,
+    paddingBottom: 16,
+    paddingLeft: 16,
+    paddingRight: 16,
     alignSelf: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   title: {
     fontSize: 24,
     fontFamily: fonts.bold,
     color: colors.darkFont,
-    marginLeft: 4,
+    paddingHorizontal: 16,
   },
   subtitle: {
     fontSize: 16,
     fontFamily: fonts.regular,
     color: colors.grayFont,
-    marginLeft: 4,
     marginTop: 4,
+    paddingHorizontal: 16,
   },
   formContainer: {
     paddingHorizontal: 16,

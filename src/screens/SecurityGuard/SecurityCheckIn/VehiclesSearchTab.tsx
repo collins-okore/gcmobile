@@ -63,7 +63,9 @@ const VehiclesSearchTab: React.FC<VehiclesSearchTabProps> = ({searchQuery}) => {
   const isFocused = useIsFocused();
 
   const handleVehiclePress = (vehicleId: string) => {
-    (navigation as any).navigate('ViewSecurityGuardVehicle', {vehicleId});
+    console.log('vehicleId', vehicleId);
+    console.log('navigation', navigation);
+    // (navigation as any).navigate('ViewSecurityGuardVehicle', {vehicleId});
   };
 
   const loadVehicles = useCallback(async (query?: string) => {
@@ -161,7 +163,12 @@ const VehiclesSearchTab: React.FC<VehiclesSearchTabProps> = ({searchQuery}) => {
         data={vehicles}
         keyExtractor={item => item.id}
         renderItem={({item}) => (
-          <VehicleItem item={item} onPress={handleVehiclePress} />
+          <VehicleItem
+            item={item}
+            onPress={() => {
+              handleVehiclePress(item.id);
+            }}
+          />
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}

@@ -84,7 +84,9 @@ const ResidentsSearchTab: React.FC<ResidentsSearchTabProps> = ({
   const isFocused = useIsFocused();
 
   const handleResidentPress = (residentId: string) => {
-    (navigation as any).navigate('ViewResident', {residentId});
+    console.log('residentId', residentId);
+    console.log('navigation', navigation);
+    // (navigation as any).navigate('ViewResident', {residentId});
   };
 
   const loadResidents = useCallback(async (query?: string) => {

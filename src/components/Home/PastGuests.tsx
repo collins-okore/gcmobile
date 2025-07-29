@@ -66,6 +66,7 @@ const PastGuests = () => {
     date: guest.departureTime || guest.updatedAt,
     purpose: guest.purpose,
     vehiclePlate: guest.vehicleLicensePlate || '',
+    status: guest.status,
   }));
 
   // Loading state

@@ -7,9 +7,12 @@ import {
   StatusBar,
   Text,
   ActivityIndicator,
+  Platform,
+  KeyboardAvoidingView,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {ArrowLeftIcon} from 'react-native-heroicons/outline';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {Toast} from 'toastify-react-native';
 import residentGuestService, {
@@ -23,6 +26,7 @@ import DateTimeInput from '../../components/Common/DateTimeInput/index';
 import Button from '../../components/Common/Button/index';
 import PhoneInput from '../../components/Common/PhoneInput/index';
 import {normalize} from '../../lib/normalize';
+import Icon from '../../components/Common/Icon';
 
 const EditGuest = () => {
   const navigation = useNavigation();
@@ -48,6 +52,12 @@ const EditGuest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    setIsScrolled(scrollY > 0);
+  };
 
   // Fetch guest data on component mount
   useEffect(() => {
@@ -178,18 +188,10 @@ const EditGuest = () => {
         idNumber: formData.idNumber.trim(),
         purpose: formData.purpose,
         arrivalTime: formData.arrivalTime.toISOString(),
-        ...(formData.vehicleLicensePlate.trim() && {
-          vehicleLicensePlate: formData.vehicleLicensePlate.trim(),
-        }),
-        ...(formData.vehicleMake.trim() && {
-          vehicleMake: formData.vehicleMake.trim(),
-        }),
-        ...(formData.vehicleModel.trim() && {
-          vehicleModel: formData.vehicleModel.trim(),
-        }),
-        ...(formData.vehicleColor.trim() && {
-          vehicleColor: formData.vehicleColor.trim(),
-        }),
+        vehicleLicensePlate: formData.vehicleLicensePlate.trim() || '',
+        vehicleMake: formData.vehicleMake.trim() || '',
+        vehicleModel: formData.vehicleModel.trim() || '',
+        vehicleColor: formData.vehicleColor.trim() || '',
       };
 
       await residentGuestService.updateResidentGuest(guestId, updateData);
@@ -265,12 +267,10 @@ const EditGuest = () => {
       <View style={styles.screen}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
         <SafeAreaView style={styles.safeArea}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Icon name="arrow-left" size={23} color={colors.darkFont} />
+          </TouchableOpacity>
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}>
-              <ArrowLeftIcon size={24} color={colors.darkFont} />
-            </TouchableOpacity>
             <Text style={styles.title}>Edit Guest</Text>
           </View>
           <View style={styles.loadingContainer}>
@@ -288,12 +288,10 @@ const EditGuest = () => {
       <View style={styles.screen}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
         <SafeAreaView style={styles.safeArea}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Icon name="arrow-left" size={23} color={colors.darkFont} />
+          </TouchableOpacity>
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}>
-              <ArrowLeftIcon size={24} color={colors.darkFont} />
-            </TouchableOpacity>
             <Text style={styles.title}>Edit Guest</Text>
           </View>
           <View style={styles.errorContainer}>
@@ -346,20 +344,28 @@ const EditGuest = () => {
   }
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
+      <SafeAreaView
+        style={[styles.topBar, isScrolled && styles.topBarWithBorder]}
+        edges={['left', 'right', 'top']}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Icon name="arrow-left" size={23} color={colors.darkFont} />
+        </TouchableOpacity>
+      </SafeAreaView>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
-        <SafeAreaView style={styles.safeArea}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}>
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}>
-              <ArrowLeftIcon size={24} color={colors.darkFont} />
-            </TouchableOpacity>
             <Text style={styles.title}>Edit Guest</Text>
             <Text style={styles.subtitle}>
               Update {guest?.name || 'the guest'}'s information below.
@@ -489,7 +495,7 @@ const EditGuest = () => {
           />
         </View>
       </SafeAreaView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -510,27 +516,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 14,
-    paddingVertical: 0,
     marginBottom: 24,
+    marginTop: 4,
+    paddingHorizontal: 16,
+  },
+  topBar: {
+    backgroundColor: colors.whiteBg,
+  },
+  topBarWithBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
   backButton: {
     paddingVertical: 8,
-    paddingHorizontal: 0,
+    paddingBottom: 10,
+    paddingLeft: 16,
+    paddingRight: 16,
     alignSelf: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   title: {
     fontSize: 24,
     fontFamily: fonts.bold,
     color: colors.darkFont,
-    marginLeft: 4,
   },
   subtitle: {
     fontSize: 16,
     fontFamily: fonts.regular,
     color: colors.grayFont,
-    marginLeft: 4,
     marginTop: 4,
   },
   formContainer: {

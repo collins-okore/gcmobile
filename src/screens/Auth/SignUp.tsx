@@ -7,6 +7,8 @@ import {
   StatusBar,
   Text,
   Alert,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import authService from '../../services/authService';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -234,15 +236,20 @@ const SignUp = () => {
     } finally {
       setIsLoading(false);
     }
+    [[]];
   };
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
         <SafeAreaView style={styles.safeArea}>
           {/* Header */}
           <View style={styles.header}>
@@ -352,7 +359,7 @@ const SignUp = () => {
           </View>
         </View>
       </SafeAreaView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

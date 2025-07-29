@@ -1,9 +1,9 @@
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import React from 'react';
+import React, {useMemo} from 'react';
 import fonts from '../../themes/fonts';
 import colors from '../../themes/colors';
-import {CalendarIcon} from 'react-native-heroicons/outline';
 import {format, isThisYear} from 'date-fns';
+import Icon from './Icon';
 
 interface Guest {
   id: string;
@@ -11,6 +11,7 @@ interface Guest {
   date: string;
   purpose: string;
   vehiclePlate: string;
+  status: string;
 }
 
 interface PastGuestItemProps {
@@ -31,13 +32,29 @@ const formatDate = (dateString: string) => {
 };
 
 const PastGuestItem: React.FC<PastGuestItemProps> = ({guest, onPressItem}) => {
+  const [iconColor, iconBgColor, iconName] = useMemo(() => {
+    if (guest.status === 'pending') {
+      return [colors.grayIconColor, colors.grayBg, 'clock'];
+    }
+    if (guest.status === 'arrived') {
+      return [colors.grayIconColor, colors.grayBg, 'check-circle'];
+    }
+    if (guest.status === 'cancelled') {
+      return [colors.grayIconColor, colors.grayBg, 'ban'];
+    }
+    if (guest.status === 'departed') {
+      return [colors.grayIconColor, colors.grayBg, 'walking'];
+    }
+    return ['#9E9E9E', '#F5F5F5', 'clock'];
+  }, [guest]);
+
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={() => onPressItem(guest.id)}>
       <View style={styles.left}>
-        <View style={styles.avatar}>
-          <CalendarIcon color={colors.grayIconColor} size={26} />
+        <View style={[styles.avatar, {backgroundColor: iconBgColor}]}>
+          <Icon name={iconName} size={22} color={iconColor} />
         </View>
         <View style={styles.details}>
           <Text style={styles.date}>{formatDate(guest.date)}</Text>
@@ -47,7 +64,11 @@ const PastGuestItem: React.FC<PastGuestItemProps> = ({guest, onPressItem}) => {
       </View>
       <View style={styles.right}>
         <View style={styles.plateContainer}>
-          <Text style={styles.vehiclePlate}>{guest.vehiclePlate}</Text>
+          <Text style={styles.vehiclePlate}>
+            {guest.vehiclePlate && guest.vehiclePlate.trim()
+              ? guest.vehiclePlate.toUpperCase()
+              : 'No Vehicle'}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -68,6 +89,9 @@ const styles = StyleSheet.create({
   avatar: {
     justifyContent: 'center',
     alignItems: 'center',
+    height: 45,
+    width: 45,
+    borderRadius: 20,
   },
   details: {
     flexDirection: 'column',
@@ -84,16 +108,19 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     color: colors.darkFont,
     marginBottom: 4,
+    textTransform: 'capitalize',
   },
   purpose: {
     fontSize: 16,
     fontFamily: fonts.regular,
     color: colors.grayFont,
+    textTransform: 'capitalize',
   },
   vehiclePlate: {
     fontSize: 15,
     fontFamily: fonts.regular,
     color: colors.grayFont,
+    textTransform: 'uppercase',
   },
   right: {
     alignItems: 'center',

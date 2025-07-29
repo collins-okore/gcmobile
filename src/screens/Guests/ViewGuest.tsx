@@ -8,9 +8,13 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {ArrowLeftIcon} from 'react-native-heroicons/outline';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from '@react-navigation/native';
 import {Toast} from 'toastify-react-native';
 import residentGuestService, {
   ResidentGuest,
@@ -45,33 +49,36 @@ const ViewGuest = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch guest data on component mount
-  useEffect(() => {
-    const fetchGuest = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Fetch guest data function
+  const fetchGuest = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const response = await residentGuestService.getResidentGuestById(
-          guestId,
-          {
-            populate: ['resident.user'],
-          },
-        );
+      const response = await residentGuestService.getResidentGuestById(
+        guestId,
+        {
+          populate: ['resident.user'],
+        },
+      );
 
-        setGuest(normalize(response.data));
-      } catch (err: any) {
-        console.error('Error fetching guest:', err);
-        setError('Failed to load guest details. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (guestId) {
-      fetchGuest();
+      setGuest(normalize(response.data));
+    } catch (err: any) {
+      console.error('Error fetching guest:', err);
+      setError('Failed to load guest details. Please try again.');
+    } finally {
+      setLoading(false);
     }
   }, [guestId]);
+
+  // Fetch guest data on component mount and auto-refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (guestId) {
+        fetchGuest();
+      }
+    }, [guestId, fetchGuest]),
+  );
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -307,7 +314,10 @@ const ViewGuest = () => {
                   <View style={styles.guestDetailsItem}>
                     <Text style={styles.guestDetailsTitle}>License Plate</Text>
                     <Text style={styles.guestDetailsValue}>
-                      {guest.vehicleLicensePlate}
+                      {guest.vehicleLicensePlate &&
+                      guest.vehicleLicensePlate.trim()
+                        ? guest.vehicleLicensePlate.toUpperCase()
+                        : 'No Vehicle'}
                     </Text>
                   </View>
                   {(guest.vehicleMake ||
@@ -364,16 +374,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 0,
   },
   backButton: {
     paddingVertical: 8,
     paddingHorizontal: 0,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 12,
   },
   editButton: {
     paddingVertical: 8,
-    paddingHorizontal: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
   scrollView: {
     flex: 1,
