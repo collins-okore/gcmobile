@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1007245221360:android:7cb9610edbacde8b7ed135",
+        "android_client_info": {
+          "package_name": "com.gateconnect.io"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-dk_jBQmuR0rueH7Dx-4sCHsDb1sLIgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1007245221360:android:0c3b2d35ae74f99e7ed135",
         "android_client_info": {
           "package_name": "com.gcmobile"

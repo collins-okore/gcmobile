@@ -1,4 +1,4 @@
-package com.gcmobile
+package com.gateconnect.io
 
 import android.app.Application
 import com.facebook.react.PackageList
