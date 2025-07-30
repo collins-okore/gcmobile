@@ -27,7 +27,7 @@ export interface ResidentGuest {
       phone: string;
     };
     houseNumber: string;
-    unit: string;
+    blockCourt: string;
     estate?: {
       id: string;
       name: string;

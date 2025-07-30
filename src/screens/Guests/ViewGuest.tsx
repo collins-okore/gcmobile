@@ -7,9 +7,10 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import React, {useState, useCallback} from 'react';
-import {ArrowLeftIcon} from 'react-native-heroicons/outline';
 import {
   useNavigation,
   useRoute,
@@ -48,7 +49,7 @@ const ViewGuest = () => {
   const [guest, setGuest] = useState<ResidentGuest | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [isScrolled, setIsScrolled] = useState(false);
   // Fetch guest data function
   const fetchGuest = useCallback(async () => {
     try {
@@ -82,6 +83,11 @@ const ViewGuest = () => {
 
   const handleBackPress = () => {
     navigation.goBack();
+  };
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    setIsScrolled(scrollY > 0);
   };
 
   const handleEditPress = () => {
@@ -195,86 +201,127 @@ const ViewGuest = () => {
   const statusInfo = getStatusInfo(guest.status);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <View style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.scrollContent}>
-          <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}>
-              <ArrowLeftIcon size={24} color={colors.darkFont} />
-            </TouchableOpacity>
-            <DropdownMenu
-              trigger={
-                <View style={styles.editButton}>
-                  <Icon
-                    size={21}
-                    color={colors.darkFont}
-                    name="ellipsis-h-alt"
-                  />
-                </View>
-              }
-              options={[
-                {
-                  label: 'Edit Guest',
-                  value: 'edit',
-                  icon: 'edit',
-                  onPress: handleEditPress,
-                },
-                // Only show cancel option if guest is not already cancelled or departed
-                ...(guest.status !== 'cancelled' && guest.status !== 'departed'
-                  ? [
-                      {
-                        label: 'Cancel Guest',
-                        value: 'cancel',
-                        icon: 'ban',
-                        textColor: '#F44336',
-                        onPress: handleCancelGuest,
-                      },
-                    ]
-                  : []),
-              ]}
-              testID="guest-options-menu"
-            />
-          </View>
-          <View style={styles.guestInfo}>
-            <Text style={styles.guestId}>#{guest.id}</Text>
+      <SafeAreaView
+        style={[styles.header, isScrolled && styles.headerWithShadow]}
+        edges={['left', 'right', 'top']}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <Icon name="arrow-left" size={24} color={colors.darkFont} />
+        </TouchableOpacity>
+
+        <View style={styles.headerTitle}>
+          <Text style={styles.headerTitleText}>Guest Details</Text>
+        </View>
+
+        <DropdownMenu
+          trigger={
+            <View style={styles.menuButton}>
+              <Icon size={24} color={colors.darkFont} name="ellipsis-h-alt" />
+            </View>
+          }
+          options={[
+            {
+              label: 'Edit Guest',
+              value: 'edit',
+              icon: 'edit',
+              onPress: handleEditPress,
+            },
+            // Only show cancel option if guest is not already cancelled or departed
+            ...(guest.status !== 'cancelled' && guest.status !== 'departed'
+              ? [
+                  {
+                    label: 'Cancel Guest',
+                    value: 'cancel',
+                    icon: 'ban',
+                    textColor: '#F44336',
+                    onPress: handleCancelGuest,
+                  },
+                ]
+              : []),
+          ]}
+          testID="guest-options-menu"
+        />
+      </SafeAreaView>
+
+      <ScrollView
+        style={styles.scrollView}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}>
+        <SafeAreaView
+          style={styles.scrollContent}
+          edges={['left', 'right', 'bottom']}>
+          <View style={styles.heroSection}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Icon name="user" size={32} color={colors.grayIconColor} />
+              </View>
+            </View>
             <Text style={styles.guestName}>{guest.name}</Text>
-            <View style={styles.statusRow}>
+            <Text style={styles.guestPhone}>
+              {`${guest.phoneCallingCode} ${guest.phone}`}
+            </Text>
+            <View style={styles.statusContainer}>
               <View
-                style={[styles.status, {backgroundColor: statusInfo.bgColor}]}>
+                style={[
+                  styles.statusBadge,
+                  {backgroundColor: statusInfo.bgColor},
+                ]}>
                 <Text style={[styles.statusText, {color: statusInfo.color}]}>
                   {statusInfo.text}
                 </Text>
               </View>
-              <Text style={styles.timeText}>
+              <Text style={styles.arrivalTime}>
                 {formatDate(guest.arrivalTime)}
               </Text>
             </View>
           </View>
           <View style={styles.guestDetails}>
             <View style={styles.guestDetailsHeader}>
-              <Text style={styles.guestDetailsTitle}>Guest Details</Text>
+              <Text style={styles.guestDetailsSectionTitle}>Guest Details</Text>
             </View>
             <View style={styles.guestDetailsItem}>
-              <Text style={styles.guestDetailsTitle}>Full Name</Text>
-              <Text style={styles.guestDetailsValue}>{guest.name}</Text>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.guestDetailsItem}>
-              <Text style={styles.guestDetailsTitle}>ID Number</Text>
-              <Text style={styles.guestDetailsValue}>{guest.idNumber}</Text>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.guestDetailsItem}>
-              <Text style={styles.guestDetailsTitle}>Phone</Text>
-              <Text style={styles.guestDetailsValue}>{guest.phone}</Text>
+              <View style={styles.guestDetailsIconContainer}>
+                <Icon name="user" size={20} color={colors.grayIconColor} />
+              </View>
+              <View>
+                <Text style={styles.guestDetailsTitle}>Full Name</Text>
+                <Text style={styles.guestDetailsValue}>{guest.name}</Text>
+              </View>
             </View>
             <View style={styles.divider} />
             <View style={styles.guestDetailsItem}>
-              <Text style={styles.guestDetailsTitle}>Purpose</Text>
-              <Text style={styles.guestDetailsValue}>{guest.purpose}</Text>
+              <View style={styles.guestDetailsIconContainer}>
+                <Icon name="id-card" size={20} color={colors.grayIconColor} />
+              </View>
+
+              <View>
+                <Text style={styles.guestDetailsTitle}>ID Number</Text>
+                <Text style={styles.guestDetailsValue}>{guest.idNumber}</Text>
+              </View>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.guestDetailsItem}>
+              <View style={styles.guestDetailsIconContainer}>
+                <Icon name="phone" size={20} color={colors.grayIconColor} />
+              </View>
+              <View>
+                <Text style={styles.guestDetailsTitle}>Phone</Text>
+                <Text
+                  style={
+                    styles.guestDetailsValue
+                  }>{`${guest.phoneCallingCode} ${guest.phone}`}</Text>
+              </View>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.guestDetailsItem}>
+              <View style={styles.guestDetailsIconContainer}>
+                <Icon name="briefcase" size={20} color={colors.grayIconColor} />
+              </View>
+              <View>
+                <Text style={styles.guestDetailsTitle}>Purpose</Text>
+                <Text style={styles.guestDetailsValue}>{guest.purpose}</Text>
+              </View>
             </View>
             <View style={styles.divider} />
 
@@ -282,21 +329,36 @@ const ViewGuest = () => {
               <>
                 <View style={styles.divider} />
                 <View style={styles.guestDetailsItem}>
-                  <Text style={styles.guestDetailsTitle}>House Number</Text>
-                  <Text style={styles.guestDetailsValue}>
-                    House {guest.resident.houseNumber}
-                  </Text>
+                  <View style={styles.guestDetailsIconContainer}>
+                    <Icon name="home" size={20} color={colors.grayIconColor} />
+                  </View>
+                  <View>
+                    <Text style={styles.guestDetailsTitle}>House Number</Text>
+                    <Text style={styles.guestDetailsValue}>
+                      House {guest.resident.houseNumber}
+                    </Text>
+                  </View>
                 </View>
               </>
             )}
-            {guest.resident?.unit && (
+            {guest.resident?.blockCourt && (
               <>
                 <View style={styles.divider} />
                 <View style={styles.guestDetailsItem}>
-                  <Text style={styles.guestDetailsTitle}>Unit</Text>
-                  <Text style={styles.guestDetailsValue}>
-                    {guest.resident.unit}
-                  </Text>
+                  <View style={styles.guestDetailsIconContainer}>
+                    <Icon
+                      name="warehouse"
+                      size={20}
+                      color={colors.grayIconColor}
+                    />
+                  </View>
+                  <View>
+                    <Text style={styles.guestDetailsTitle}>Block/Court</Text>
+
+                    <Text style={styles.guestDetailsValue}>
+                      {guest.resident.blockCourt}
+                    </Text>
+                  </View>
                 </View>
               </>
             )}
@@ -307,18 +369,31 @@ const ViewGuest = () => {
             guest.vehicleColor) && (
             <View style={styles.guestDetails}>
               <View style={styles.guestDetailsHeader}>
-                <Text style={styles.guestDetailsTitle}>Vehicle Details</Text>
+                <Text style={styles.guestDetailsSectionTitle}>
+                  Vehicle Details
+                </Text>
               </View>
               {guest.vehicleLicensePlate && (
                 <>
                   <View style={styles.guestDetailsItem}>
-                    <Text style={styles.guestDetailsTitle}>License Plate</Text>
-                    <Text style={styles.guestDetailsValue}>
-                      {guest.vehicleLicensePlate &&
-                      guest.vehicleLicensePlate.trim()
-                        ? guest.vehicleLicensePlate.toUpperCase()
-                        : 'No Vehicle'}
-                    </Text>
+                    <View style={styles.guestDetailsIconContainer}>
+                      <Icon
+                        name="address-card"
+                        size={20}
+                        color={colors.grayIconColor}
+                      />
+                    </View>
+                    <View>
+                      <Text style={styles.guestDetailsTitle}>
+                        License Plate
+                      </Text>
+                      <Text style={styles.guestDetailsValue}>
+                        {guest.vehicleLicensePlate &&
+                        guest.vehicleLicensePlate.trim()
+                          ? guest.vehicleLicensePlate.toUpperCase()
+                          : 'No Vehicle'}
+                      </Text>
+                    </View>
                   </View>
                   {(guest.vehicleMake ||
                     guest.vehicleModel ||
@@ -328,92 +403,224 @@ const ViewGuest = () => {
               {guest.vehicleMake && (
                 <>
                   <View style={styles.guestDetailsItem}>
-                    <Text style={styles.guestDetailsTitle}>Vehicle Make</Text>
-                    <Text style={styles.guestDetailsValue}>
-                      {guest.vehicleMake}
-                    </Text>
+                    <View style={styles.guestDetailsIconContainer}>
+                      <Icon
+                        name="car-side"
+                        size={20}
+                        color={colors.grayIconColor}
+                      />
+                    </View>
+                    <View>
+                      <Text style={styles.guestDetailsTitle}>
+                        Vehicle Make & Model
+                      </Text>
+                      <Text style={styles.guestDetailsValue}>
+                        {guest.vehicleMake} {guest.vehicleModel}
+                      </Text>
+                    </View>
                   </View>
                   {(guest.vehicleModel || guest.vehicleColor) && (
                     <View style={styles.divider} />
                   )}
                 </>
               )}
-              {guest.vehicleModel && (
-                <>
-                  <View style={styles.guestDetailsItem}>
-                    <Text style={styles.guestDetailsTitle}>Vehicle Model</Text>
-                    <Text style={styles.guestDetailsValue}>
-                      {guest.vehicleModel}
-                    </Text>
-                  </View>
-                  {guest.vehicleColor && <View style={styles.divider} />}
-                </>
-              )}
+
               {guest.vehicleColor && (
                 <View style={styles.guestDetailsItem}>
-                  <Text style={styles.guestDetailsTitle}>Vehicle Color</Text>
-                  <Text style={styles.guestDetailsValue}>
-                    {guest.vehicleColor}
-                  </Text>
+                  <View style={styles.guestDetailsIconContainer}>
+                    <Icon
+                      name="palette"
+                      size={20}
+                      color={colors.grayIconColor}
+                    />
+                  </View>
+                  <View>
+                    <Text style={styles.guestDetailsTitle}>Vehicle Color</Text>
+                    <Text style={styles.guestDetailsValue}>
+                      {guest.vehicleColor}
+                    </Text>
+                  </View>
                 </View>
               )}
             </View>
           )}
-        </View>
+        </SafeAreaView>
       </ScrollView>
-    </SafeAreaView>
+      <SafeAreaView
+        style={styles.bottomBar}
+        edges={['left', 'right', 'bottom']}>
+        <View>
+          {guest.status === 'pending' && (
+            <>
+              <Text style={styles.bottomBarTitle}>Booked on</Text>
+              <Text style={styles.bottomBarValue}>
+                {formatDate(guest.createdAt)}
+              </Text>
+            </>
+          )}
+          {guest.status === 'arrived' && (
+            <>
+              <Text style={styles.bottomBarTitle}>Checked in</Text>
+              <Text style={styles.bottomBarValue}>
+                {formatDate(guest.arrivalTime)}
+              </Text>
+            </>
+          )}
+          {guest.status === 'departed' && (
+            <>
+              <Text style={styles.bottomBarTitle}>Checked out</Text>
+              <Text style={styles.bottomBarValue}>
+                {formatDate(guest.departureTime || '')}
+              </Text>
+            </>
+          )}
+        </View>
+        <TouchableOpacity
+          style={styles.bottomBarButton}
+          activeOpacity={0.8}
+          onPress={handleEditPress}>
+          <Text style={styles.bottomBarButtonText}>Edit Guest</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F3F5F7',
+    backgroundColor: colors.whiteBg,
   },
+
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 0,
-    paddingVertical: 0,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: colors.whiteBg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  headerWithShadow: {
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 0,
-    paddingLeft: 16,
-    paddingRight: 16,
-    paddingBottom: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  editButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+  headerTitle: {
+    flex: 1,
+    alignItems: 'center',
   },
+  headerTitleText: {
+    fontSize: 18,
+    fontFamily: fonts.semibold,
+    color: colors.darkFont,
+  },
+  menuButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Scroll View
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
   },
+
+  // Hero Section
+  heroSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+    paddingVertical: 24,
+    marginTop: 16,
+  },
+  avatarContainer: {
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.grayBg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  guestName: {
+    fontSize: 28,
+    fontFamily: fonts.bold,
+    color: colors.darkFont,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  guestPhone: {
+    fontSize: 16,
+    fontFamily: fonts.semibold,
+    color: colors.grayFont,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  statusBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  statusText: {
+    fontSize: 14,
+    fontFamily: fonts.semibold,
+  },
+  arrivalTime: {
+    fontSize: 14,
+    fontFamily: fonts.regular,
+    color: colors.grayFont,
+  },
+
   guestInfo: {
     paddingHorizontal: 16,
     paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 16,
   },
   guestId: {
     fontSize: 14,
     color: colors.grayFont,
     fontFamily: fonts.regular,
   },
-  guestName: {
-    fontSize: 24,
-    color: colors.darkFont,
-    fontFamily: fonts.semibold,
+
+  guestInfoContent: {
+    flex: 1,
   },
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 4,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
   },
   status: {
     paddingVertical: 8,
@@ -422,13 +629,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#E3F2FD',
     alignSelf: 'flex-start',
   },
-  statusText: {
-    fontSize: 12,
-    color: colors.primary,
-    fontFamily: fonts.semibold,
-  },
+
   timeText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.darkFont,
     fontFamily: fonts.regular,
   },
@@ -436,14 +639,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: colors.whiteBg,
     borderRadius: 8,
-    marginHorizontal: 16,
+    paddingHorizontal: 20,
     marginBottom: 16,
   },
   guestDetailsHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EFEFEF',
+    paddingTop: 20,
+    paddingBottom: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#EFEFEF',
   },
   iconContainer: {
     backgroundColor: '#E3F2FD',
@@ -454,6 +657,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 8,
   },
+  guestDetailsSectionTitle: {
+    fontSize: 18,
+    color: colors.darkFont,
+    fontFamily: fonts.bold,
+  },
   guestDetailsTitle: {
     fontSize: 16,
     color: colors.darkFont,
@@ -461,23 +669,25 @@ const styles = StyleSheet.create({
   },
   guestDetailsValue: {
     fontSize: 16,
-    color: colors.darkFont,
+    color: colors.grayFont,
     fontFamily: fonts.regular,
   },
   guestDetailsItem: {
-    paddingHorizontal: 16,
     paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
   },
   divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#EFEFEF',
+    // borderBottomWidth: 0.5,
+    // borderBottomColor: '#EFEFEF',
     marginHorizontal: 16,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F3F5F7',
+    backgroundColor: colors.whiteBg,
   },
   loadingText: {
     marginTop: 16,
@@ -489,7 +699,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F3F5F7',
+    backgroundColor: colors.whiteBg,
     paddingHorizontal: 32,
   },
   errorText: {
@@ -509,6 +719,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: fonts.semibold,
     color: colors.whiteBg,
+  },
+  bottomBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#EFEFEF',
+  },
+  bottomBarButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+  },
+  bottomBarButtonText: {
+    fontSize: 16,
+    fontFamily: fonts.semibold,
+    color: colors.whiteBg,
+  },
+  bottomBarTitle: {
+    fontSize: 14,
+    fontFamily: fonts.regular,
+    color: colors.grayFont,
+  },
+  bottomBarValue: {
+    fontSize: 16,
+    fontFamily: fonts.semibold,
+    color: colors.darkFont,
+  },
+  guestDetailsIconContainer: {
+    justifyContent: 'center',
+    width: 26,
   },
 });
 

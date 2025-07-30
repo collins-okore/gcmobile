@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1007245221360",
+    "project_id": "gate-connect-2df53",
+    "storage_bucket": "gate-connect-2df53.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1007245221360:android:0c3b2d35ae74f99e7ed135",
+        "android_client_info": {
+          "package_name": "com.gcmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-dk_jBQmuR0rueH7Dx-4sCHsDb1sLIgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

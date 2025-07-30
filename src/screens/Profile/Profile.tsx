@@ -12,12 +12,14 @@ const Profile = () => {
       <StatusBar barStyle="dark-content" backgroundColor={colors.whiteBg} />
 
       <ScrollView contentContainerStyle={styles.scrollView}>
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'top']}>
           {/* <View style={styles.topbar}>
         <Text style={styles.title}>Profile</Text>
       </View> */}
-          <ProfileSummary />
-          <ProfileMenu />
+          <View style={styles.profileContainer}>
+            <ProfileSummary />
+            <ProfileMenu />
+          </View>
         </SafeAreaView>
       </ScrollView>
     </View>
@@ -31,6 +33,7 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+    backgroundColor: colors.whiteBg,
   },
   title: {
     fontSize: 24,
@@ -42,7 +45,7 @@ const styles = StyleSheet.create({
   scrollView: {
     flexGrow: 1,
 
-    backgroundColor: colors.grayBg,
+    backgroundColor: colors.whiteBg,
   },
   topbar: {
     flexDirection: 'row',
@@ -51,6 +54,10 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     paddingHorizontal: 16,
     backgroundColor: colors.whiteBg,
+  },
+  profileContainer: {
+    flex: 1,
+    backgroundColor: colors.grayBg,
   },
 });
 
