@@ -477,8 +477,9 @@ const ViewGuest = () => {
         animationIn="slideInUp"
         animationOut="slideOutDown"
         animationInTiming={300}
-        animationOutTiming={300}>
-        <View style={styles.modalContent}>
+        animationOutTiming={300}
+        statusBarTranslucent={true}>
+        <SafeAreaView style={styles.modalContent}>
           <View style={styles.modalHandle} />
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Guest Options</Text>
@@ -488,7 +489,7 @@ const ViewGuest = () => {
               style={styles.modalOption}
               onPress={handleEditPress}>
               <View style={styles.modalOptionIcon}>
-                <Icon name="edit" size={20} color={colors.primary} />
+                <Icon name="pen-nib" size={17} color={colors.grayIconColor} />
               </View>
               <Text style={styles.modalOptionText}>Edit Guest</Text>
             </TouchableOpacity>
@@ -499,7 +500,7 @@ const ViewGuest = () => {
                 style={styles.modalOption}
                 onPress={handleCancelGuest}>
                 <View style={styles.modalOptionIcon}>
-                  <Icon name="ban" size={20} color="#F44336" />
+                  <Icon name="ban" size={17} color="#F44336" />
                 </View>
                 <Text style={[styles.modalOptionText, {color: '#F44336'}]}>
                   Cancel Guest
@@ -507,7 +508,7 @@ const ViewGuest = () => {
               </TouchableOpacity>
             )}
           </View>
-        </View>
+        </SafeAreaView>
       </Modal>
     </View>
   );
@@ -831,12 +832,12 @@ const styles = StyleSheet.create({
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
   modalOptionText: {
     fontSize: 16,
     fontFamily: fonts.regular,
-    color: colors.darkFont,
+    color: colors.grayFont,
   },
 });
 
