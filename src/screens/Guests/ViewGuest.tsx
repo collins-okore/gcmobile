@@ -17,6 +17,7 @@ import {
   useFocusEffect,
 } from '@react-navigation/native';
 import {Toast} from 'toastify-react-native';
+import Modal from 'react-native-modal';
 import residentGuestService, {
   ResidentGuest,
 } from '../../services/residentGuestService';
@@ -26,7 +27,6 @@ import fonts from '../../themes/fonts';
 import {format, isThisYear} from 'date-fns';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from '../../components/Common/Icon';
-import DropdownMenu from '../../components/Common/DropdownMenu';
 import {normalize} from '../../lib/normalize';
 
 const formatDate = (dateString: string) => {
@@ -50,6 +50,7 @@ const ViewGuest = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   // Fetch guest data function
   const fetchGuest = useCallback(async () => {
     try {
@@ -91,10 +92,12 @@ const ViewGuest = () => {
   };
 
   const handleEditPress = () => {
+    setIsModalVisible(false);
     (navigation as any).navigate('EditResidentGuest', {guestId});
   };
 
   const handleCancelGuest = () => {
+    setIsModalVisible(false);
     Alert.alert(
       'Cancel Guest',
       `Are you sure you want to cancel ${guest?.name}'s visit? This action cannot be undone.`,
@@ -214,34 +217,12 @@ const ViewGuest = () => {
           <Text style={styles.headerTitleText}>Guest Details</Text>
         </View>
 
-        <DropdownMenu
-          trigger={
-            <View style={styles.menuButton}>
-              <Icon size={24} color={colors.darkFont} name="ellipsis-h-alt" />
-            </View>
-          }
-          options={[
-            {
-              label: 'Edit Guest',
-              value: 'edit',
-              icon: 'edit',
-              onPress: handleEditPress,
-            },
-            // Only show cancel option if guest is not already cancelled or departed
-            ...(guest.status !== 'cancelled' && guest.status !== 'departed'
-              ? [
-                  {
-                    label: 'Cancel Guest',
-                    value: 'cancel',
-                    icon: 'ban',
-                    textColor: '#F44336',
-                    onPress: handleCancelGuest,
-                  },
-                ]
-              : []),
-          ]}
-          testID="guest-options-menu"
-        />
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => setIsModalVisible(true)}
+          testID="guest-options-menu">
+          <Icon size={24} color={colors.darkFont} name="ellipsis-h-alt" />
+        </TouchableOpacity>
       </SafeAreaView>
 
       <ScrollView
@@ -297,7 +278,9 @@ const ViewGuest = () => {
 
               <View>
                 <Text style={styles.guestDetailsTitle}>ID Number</Text>
-                <Text style={styles.guestDetailsValue}>{guest.idNumber}</Text>
+                <Text style={styles.guestDetailsValue}>
+                  {guest.idNumber || 'Not Provided'}
+                </Text>
               </View>
             </View>
             <View style={styles.divider} />
@@ -482,6 +465,50 @@ const ViewGuest = () => {
           <Text style={styles.bottomBarButtonText}>Edit Guest</Text>
         </TouchableOpacity>
       </SafeAreaView>
+
+      {/* Bottom Modal for Menu Options */}
+      <Modal
+        isVisible={isModalVisible}
+        onBackdropPress={() => setIsModalVisible(false)}
+        onSwipeComplete={() => setIsModalVisible(false)}
+        swipeDirection={['down']}
+        style={styles.modal}
+        backdropOpacity={0.5}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+        animationInTiming={300}
+        animationOutTiming={300}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHandle} />
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Guest Options</Text>
+          </View>
+          <View style={styles.modalOptions}>
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={handleEditPress}>
+              <View style={styles.modalOptionIcon}>
+                <Icon name="edit" size={20} color={colors.primary} />
+              </View>
+              <Text style={styles.modalOptionText}>Edit Guest</Text>
+            </TouchableOpacity>
+
+            {/* Only show cancel option if guest is not already cancelled or departed */}
+            {guest.status !== 'cancelled' && guest.status !== 'departed' && (
+              <TouchableOpacity
+                style={styles.modalOption}
+                onPress={handleCancelGuest}>
+                <View style={styles.modalOptionIcon}>
+                  <Icon name="ban" size={20} color="#F44336" />
+                </View>
+                <Text style={[styles.modalOptionText, {color: '#F44336'}]}>
+                  Cancel Guest
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -753,6 +780,63 @@ const styles = StyleSheet.create({
   guestDetailsIconContainer: {
     justifyContent: 'center',
     width: 26,
+  },
+
+  // Modal Styles
+  modal: {
+    justifyContent: 'flex-end',
+    margin: 0,
+  },
+  modalContent: {
+    backgroundColor: colors.whiteBg,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 34,
+    maxHeight: '50%',
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  modalHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: fonts.semibold,
+    color: colors.darkFont,
+    textAlign: 'center',
+  },
+  modalOptions: {
+    paddingTop: 8,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  modalOptionIcon: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontFamily: fonts.regular,
+    color: colors.darkFont,
   },
 });
 

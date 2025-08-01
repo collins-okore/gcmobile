@@ -12,6 +12,7 @@ import {AuthProvider} from './src/contexts/AuthContext';
 import AuthStateNavigator from './src/navigators/AuthStateNavigator';
 import ToastManager from 'toastify-react-native';
 import CustomToast from './src/components/Common/CustomToast';
+import FCMHandler from './src/components/Common/FCMHandler';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -42,25 +43,27 @@ const AppContent: React.FC = () => {
 
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor="transparent"
-          translucent={Platform.OS === 'android'}
-        />
-        <AuthStateNavigator />
-      </NavigationContainer>
+      <FCMHandler>
+        <NavigationContainer>
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor="transparent"
+            translucent={Platform.OS === 'android'}
+          />
+          <AuthStateNavigator />
+        </NavigationContainer>
 
-      {/* Toast Manager with custom components */}
-      <ToastManager
-        config={toastConfig}
-        position="top"
-        duration={3000}
-        animationStyle="fade"
-        theme="light"
-        showProgressBar={false}
-        topOffset={getTopOffset()}
-      />
+        {/* Toast Manager with custom components */}
+        <ToastManager
+          config={toastConfig}
+          position="top"
+          duration={3000}
+          animationStyle="fade"
+          theme="light"
+          showProgressBar={false}
+          topOffset={getTopOffset()}
+        />
+      </FCMHandler>
     </AuthProvider>
   );
 };

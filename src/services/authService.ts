@@ -35,12 +35,13 @@ interface AuthResponse {
 
 interface ProfileData {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   phone?: string;
   phoneCountryCode?: string; // Country code like "KE", "US"
   phoneCallingCode?: string; // Calling code like "+254", "+27"
+  firebaseToken?: string; // FCM token for push notifications
   resident?: {
     id: string;
     houseNumber: string;
@@ -110,19 +111,38 @@ interface ProfileResponse {
 const authService = {
   // Login user
   login: async (credentials: LoginCredentials) => {
-    const response = await apiClient.post<AuthResponse>(
-      apiUrls.AUTH_URLS.LOGIN,
-      {
-        identifier: credentials.email,
-        password: credentials.password,
-      },
-    );
+    const response = await apiClient
+      .post<AuthResponse>(
+        apiUrls.AUTH_URLS.LOGIN,
+        {
+          identifier: credentials.email,
+          password: credentials.password,
+        },
+        {withCredentials: true},
+      )
+      .then(response => {
+        console.log('response', response.data);
+        return response;
+      })
+      .catch(error => {
+        console.log('error', error.response.data);
+        return error.response;
+      });
     // Store token and user in AsyncStorage
     await AsyncStorage.setItem('gc-connect-token', response.data?.jwt);
     await AsyncStorage.setItem(
       'gc-connect-user',
       JSON.stringify(response.data.user),
     );
+
+    // Register FCM token after successful login
+    try {
+      const fcmService = (await import('./fcmService')).default;
+      await fcmService.initializeFCM();
+    } catch (error) {
+      console.error('Error registering FCM token after login:', error);
+    }
+
     return response.data;
   },
 
@@ -187,6 +207,8 @@ const authService = {
 
   // Update user profile
   updateProfile: async (profileData: ProfileData) => {
+    console.log('profileData', profileData);
+
     const response = await apiClient.put(
       apiUrls.AUTH_URLS.UPDATE_PROFILE + `/${profileData.id}`,
       profileData,
