@@ -27,6 +27,7 @@ import fonts from '../../themes/fonts';
 import {format, isThisYear} from 'date-fns';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from '../../components/Common/Icon';
+import GuestTimeline from '../../components/Common/GuestTimeline';
 import {normalize} from '../../lib/normalize';
 
 const formatDate = (dateString: string) => {
@@ -427,6 +428,7 @@ const ViewGuest = () => {
               )}
             </View>
           )}
+          <GuestTimeline guest={guest} />
         </SafeAreaView>
       </ScrollView>
       <SafeAreaView
