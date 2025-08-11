@@ -17,7 +17,7 @@ const TopBar = () => {
       <Text style={styles.title}>Guests</Text>
 
       <TouchableOpacity style={styles.addButton} onPress={handleAddGuest}>
-        <Icon name="plus" size={26} color={colors.darkFont} />
+        <Icon name="plus" size={24} color={colors.darkFont} />
       </TouchableOpacity>
     </View>
   );
@@ -38,13 +38,22 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: fonts.bold,
     color: colors.darkFont,
-    paddingLeft: 16,
+    marginLeft: 16,
   },
   addButton: {
-    padding: 0,
-    paddingRight: 16,
-    paddingLeft: 16,
-    paddingVertical: 10,
+    // padding: 0,
+    // paddingRight: 16,
+    // paddingLeft: 16,
+    // paddingVertical: 10,
+    // backgroundColor: 'red',
+
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
 });
 

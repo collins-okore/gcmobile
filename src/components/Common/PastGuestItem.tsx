@@ -34,18 +34,18 @@ const formatDate = (dateString: string) => {
 const PastGuestItem: React.FC<PastGuestItemProps> = ({guest, onPressItem}) => {
   const [iconColor, iconBgColor, iconName] = useMemo(() => {
     if (guest.status === 'pending') {
-      return [colors.grayIconColor, colors.grayBg, 'clock'];
+      return [colors.grayIconColor, colors.grayBg, 'calendar-plus'];
     }
     if (guest.status === 'arrived') {
-      return [colors.grayIconColor, colors.grayBg, 'check-circle'];
+      return [colors.grayIconColor, colors.grayBg, 'sign-in-alt'];
     }
     if (guest.status === 'cancelled') {
       return [colors.grayIconColor, colors.grayBg, 'ban'];
     }
     if (guest.status === 'departed') {
-      return [colors.grayIconColor, colors.grayBg, 'walking'];
+      return [colors.grayIconColor, colors.grayBg, 'sign-out-alt'];
     }
-    return ['#9E9E9E', '#F5F5F5', 'clock'];
+    return ['#9E9E9E', '#F5F5F5', 'calendar-plus'];
   }, [guest]);
 
   return (
@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: fonts.regular,
     color: colors.grayFont,
-    textTransform: 'uppercase',
   },
   right: {
     alignItems: 'center',

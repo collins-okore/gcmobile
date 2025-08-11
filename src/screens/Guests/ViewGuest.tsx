@@ -459,12 +459,34 @@ const ViewGuest = () => {
               </Text>
             </>
           )}
+          {guest.status === 'cancelled' && (
+            <>
+              <Text style={styles.bottomBarTitle}>Cancelled</Text>
+              <Text style={styles.bottomBarValue}>
+                {formatDate(guest.cancelledAt || '')}
+              </Text>
+            </>
+          )}
         </View>
         <TouchableOpacity
-          style={styles.bottomBarButton}
+          style={[
+            styles.bottomBarButton,
+            (guest.status === 'cancelled' || guest.status === 'departed') &&
+              styles.bottomBarButtonDisabled,
+          ]}
           activeOpacity={0.8}
-          onPress={handleEditPress}>
-          <Text style={styles.bottomBarButtonText}>Edit Guest</Text>
+          onPress={handleEditPress}
+          disabled={
+            guest.status === 'cancelled' || guest.status === 'departed'
+          }>
+          <Text
+            style={[
+              styles.bottomBarButtonText,
+              (guest.status === 'cancelled' || guest.status === 'departed') &&
+                styles.bottomBarButtonTextDisabled,
+            ]}>
+            Edit Guest
+          </Text>
         </TouchableOpacity>
       </SafeAreaView>
 
@@ -488,12 +510,35 @@ const ViewGuest = () => {
           </View>
           <View style={styles.modalOptions}>
             <TouchableOpacity
-              style={styles.modalOption}
-              onPress={handleEditPress}>
+              style={[
+                styles.modalOption,
+                (guest.status === 'cancelled' || guest.status === 'departed') &&
+                  styles.modalOptionDisabled,
+              ]}
+              onPress={handleEditPress}
+              disabled={
+                guest.status === 'cancelled' || guest.status === 'departed'
+              }>
               <View style={styles.modalOptionIcon}>
-                <Icon name="pen-nib" size={17} color={colors.grayIconColor} />
+                <Icon
+                  name="pen-nib"
+                  size={17}
+                  color={
+                    guest.status === 'cancelled' || guest.status === 'departed'
+                      ? '#BDBDBD'
+                      : colors.grayIconColor
+                  }
+                />
               </View>
-              <Text style={styles.modalOptionText}>Edit Guest</Text>
+              <Text
+                style={[
+                  styles.modalOptionText,
+                  (guest.status === 'cancelled' ||
+                    guest.status === 'departed') &&
+                    styles.modalOptionTextDisabled,
+                ]}>
+                Edit Guest
+              </Text>
             </TouchableOpacity>
 
             {/* Only show cancel option if guest is not already cancelled or departed */}
@@ -770,6 +815,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     color: colors.whiteBg,
   },
+  bottomBarButtonDisabled: {
+    backgroundColor: '#E0E0E0',
+  },
+  bottomBarButtonTextDisabled: {
+    color: '#BDBDBD',
+  },
   bottomBarTitle: {
     fontSize: 14,
     fontFamily: fonts.regular,
@@ -840,6 +891,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: fonts.regular,
     color: colors.grayFont,
+  },
+  modalOptionDisabled: {
+    opacity: 0.5,
+  },
+  modalOptionTextDisabled: {
+    color: '#BDBDBD',
   },
 });
 

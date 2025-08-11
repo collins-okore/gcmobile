@@ -47,7 +47,7 @@ const GuestTimeline: React.FC<GuestTimelineProps> = ({guest}) => {
       title: 'Booked',
       description: 'Guest visit was scheduled',
       icon: 'calendar-plus',
-      iconColor: '#2196F3',
+      iconColor: '#FF9800', //#2196F3',
       isActive:
         guest.status === 'pending' ||
         guest.status === 'arrived' ||
@@ -62,7 +62,7 @@ const GuestTimeline: React.FC<GuestTimelineProps> = ({guest}) => {
         title: 'Checked In',
         description: 'Guest arrived at the estate',
         icon: 'sign-in-alt',
-        iconColor: '#4CAF50',
+        iconColor: '#2196F3', //'#4CAF50',
         isActive: guest.status === 'arrived' || guest.status === 'departed',
       });
     }
@@ -75,7 +75,7 @@ const GuestTimeline: React.FC<GuestTimelineProps> = ({guest}) => {
         title: 'Checked Out',
         description: 'Guest left the estate',
         icon: 'sign-out-alt',
-        iconColor: '#FF9800',
+        iconColor: '#4CAF50', //'#FF9800',
         isActive: true,
       });
     }
@@ -87,7 +87,7 @@ const GuestTimeline: React.FC<GuestTimelineProps> = ({guest}) => {
         timestamp: guest.cancelledAt || guest.createdAt,
         title: 'Cancelled',
         description: 'Guest visit was cancelled',
-        icon: 'times-circle',
+        icon: 'ban',
         iconColor: '#F44336',
         isActive: true,
       });

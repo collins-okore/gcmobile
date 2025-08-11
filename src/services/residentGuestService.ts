@@ -16,6 +16,7 @@ export interface ResidentGuest {
   purpose: string;
   arrivalTime: string;
   departureTime?: string;
+  cancelledAt?: string;
   status: 'pending' | 'arrived' | 'departed' | 'cancelled';
   resident?: {
     id: string;

@@ -26,7 +26,7 @@ const Guests = () => {
   const renderTabBar = (props: any) => (
     <TabBar
       {...props}
-      indicatorStyle={{backgroundColor: colors.darkFont}}
+      indicatorStyle={{backgroundColor: colors.primary}}
       style={{
         backgroundColor: colors.whiteBg,
         elevation: 0,
@@ -46,7 +46,7 @@ const Guests = () => {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={['top']}>
       <TopBar />
       <View style={styles.tabArea}>
         <TabView

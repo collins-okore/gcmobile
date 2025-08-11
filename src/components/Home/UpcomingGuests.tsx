@@ -65,7 +65,7 @@ const UpcomingGuests = () => {
     name: guest.name,
     date: guest.arrivalTime,
     purpose: guest.purpose,
-    vehiclePlate: guest.vehicleLicensePlate || 'N/A',
+    vehiclePlate: guest.vehicleLicensePlate || '',
     status: guest.status,
   }));
 

@@ -37,18 +37,18 @@ const UpcomingGuestItem: React.FC<UpcomingGuestItemProps> = ({
 }) => {
   const [iconColor, iconBgColor, iconName] = useMemo(() => {
     if (guest.status === 'pending') {
-      return [colors.grayIconColor, colors.grayBg, 'clock'];
+      return [colors.grayIconColor, colors.grayBg, 'calendar-plus'];
     }
     if (guest.status === 'arrived') {
-      return [colors.grayIconColor, colors.grayBg, 'check-circle'];
+      return [colors.grayIconColor, colors.grayBg, 'sign-in-alt'];
     }
     if (guest.status === 'cancelled') {
       return ['#F44336', '#FFEBEE', 'ban'];
     }
     if (guest.status === 'departed') {
-      return ['#4CAF50', '#E8F5E8', 'check'];
+      return ['#4CAF50', '#E8F5E8', 'sign-out-alt'];
     }
-    return ['#9E9E9E', '#F5F5F5', 'clock'];
+    return ['#9E9E9E', '#F5F5F5', 'calendar-plus'];
   }, [guest]);
   return (
     <TouchableOpacity
