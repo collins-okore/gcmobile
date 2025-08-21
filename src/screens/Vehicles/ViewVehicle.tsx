@@ -346,10 +346,6 @@ const ViewVehicle = () => {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Registration Details</Text>
               <View style={styles.card}>
-                <View style={styles.infoRow}>
-                  <Text style={styles.label}>Vehicle ID</Text>
-                  <Text style={styles.value}>{vehicle.id}</Text>
-                </View>
                 <View style={styles.divider} />
                 <View style={styles.infoRow}>
                   <Text style={styles.label}>Registered On</Text>

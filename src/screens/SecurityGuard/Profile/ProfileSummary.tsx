@@ -11,20 +11,21 @@ const ProfileSummary = () => {
 
   // Load full profile on component mount if we don't have extended data
   useEffect(() => {
-    if (
-      user &&
-      !user.houseNumber &&
-      !user.resident &&
-      !isLoadingProfile // prevent re-entry while loading
-    ) {
-      setIsLoadingProfile(true);
-      loadFullProfile()
-        .catch(error => console.error('Failed to load profile:', error))
-        .finally(() => setIsLoadingProfile(false));
-    }
-    // Only depend on the minimal set needed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    const loadProfile = async () => {
+      if (user && !user.estateName) {
+        setIsLoadingProfile(true);
+        try {
+          await loadFullProfile();
+        } catch (error) {
+          console.error('Failed to load profile:', error);
+        } finally {
+          setIsLoadingProfile(false);
+        }
+      }
+    };
+
+    loadProfile();
+  }, [user, loadFullProfile]);
 
   // Format user name
   const userName = user
@@ -57,21 +58,21 @@ const ProfileSummary = () => {
       </View>
       <View style={styles.stats}>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>2</Text>
+          <Text style={styles.statValue}>0</Text>
           <Text style={styles.statLabel}>Household</Text>
         </View>
 
         <View style={styles.statSeparator} />
 
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>12</Text>
+          <Text style={styles.statValue}>0</Text>
           <Text style={styles.statLabel}>Visits</Text>
         </View>
 
         <View style={styles.statSeparator} />
 
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>3</Text>
+          <Text style={styles.statValue}>0</Text>
           <Text style={styles.statLabel}>Vehicles</Text>
         </View>
       </View>

@@ -1,9 +1,13 @@
 import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import colors from '../../themes/colors';
 import fonts from '../../themes/fonts';
 import {UserIcon} from 'react-native-heroicons/outline';
 import {useAuth} from '../../contexts/AuthContext';
+import {useFocusEffect} from '@react-navigation/native';
+import residentHouseholdMemberService from '../../services/residentHouseholdMemberService';
+import residentGuestService from '../../services/residentGuestService';
+import residentVehicleService from '../../services/residentVehicleService';
 
 const ProfileSummary = () => {
   const {user, loadFullProfile} = useAuth();
@@ -41,6 +45,57 @@ const ProfileSummary = () => {
       : user.estateName || 'Address not available'
     : 'Loading...';
 
+  const [householdMembersCount, setHouseholdMembersCount] = useState(0);
+  const [visitsCount, setVisitsCount] = useState(0);
+  const [vehiclesCount, setVehiclesCount] = useState(0);
+
+  const fetchCounts = useCallback(async () => {
+    try {
+      const [householdResponse, visitsResponse, vehiclesResponse] =
+        await Promise.all([
+          residentHouseholdMemberService.getAllHouseholdMembers({
+            pagination: {
+              page: 1,
+              pageSize: 10,
+            },
+            sort: ['updatedAt:desc'],
+          }),
+          residentGuestService.getAllResidentGuests({
+            filters: {
+              status: {
+                $in: ['arrived', 'pending', 'departed'],
+              },
+            },
+            sort: ['updatedAt:desc'],
+            pagination: {
+              page: 1,
+              pageSize: 10,
+            },
+          }),
+          residentVehicleService.getAllVehicles({
+            pagination: {
+              page: 1,
+              pageSize: 10,
+            },
+            sort: ['updatedAt:desc'],
+          }),
+        ]);
+
+      setHouseholdMembersCount(householdResponse.meta?.pagination?.total || 0);
+      setVisitsCount(visitsResponse.meta?.total || 0);
+      setVehiclesCount(vehiclesResponse.meta?.pagination?.total || 0);
+    } catch (error) {
+      console.error('Error fetching profile counts:', error);
+    }
+  }, []);
+
+  // Fetch counts when screen becomes visible
+  useFocusEffect(
+    useCallback(() => {
+      fetchCounts();
+    }, [fetchCounts]),
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.profile}>
@@ -58,21 +113,21 @@ const ProfileSummary = () => {
       </View>
       <View style={styles.stats}>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>2</Text>
+          <Text style={styles.statValue}>{householdMembersCount}</Text>
           <Text style={styles.statLabel}>Household</Text>
         </View>
 
         <View style={styles.statSeparator} />
 
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>12</Text>
+          <Text style={styles.statValue}>{visitsCount}</Text>
           <Text style={styles.statLabel}>Visits</Text>
         </View>
 
         <View style={styles.statSeparator} />
 
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>3</Text>
+          <Text style={styles.statValue}>{vehiclesCount}</Text>
           <Text style={styles.statLabel}>Vehicles</Text>
         </View>
       </View>
