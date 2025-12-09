@@ -8,8 +8,8 @@ const getBaseURL = () => {
     return process.env.API_BASE_URL; // Production/custom environment
   }
   // return 'https://a5e2a068b62d.ngrok-free.app/api';
-  return 'https://api.gateconnect.io/api';
-  // return 'http://192.168.100.44:1337/api';
+  // return 'https://api.gateconnect.io/api';
+  return 'http://192.168.100.45:1337/api';
 
   // Development URLs
   // if (Platform.OS === 'android') {
