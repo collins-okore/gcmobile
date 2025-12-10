@@ -19,35 +19,41 @@ const routes = [
   {key: 'past', title: 'Past'},
 ];
 
-const Guests = () => {
+const Visits = () => {
   const layout = useWindowDimensions();
   const [index, setIndex] = React.useState(0);
 
   const renderTabBar = (props: any) => (
     <TabBar
       {...props}
-      indicatorStyle={{backgroundColor: colors.primary}}
+      indicatorStyle={{
+        backgroundColor: colors.primary,
+        height: 3, // Thickened indicator
+        borderRadius: 1.5,
+      }}
       style={{
         backgroundColor: colors.whiteBg,
         elevation: 0,
         shadowOpacity: 0,
         borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
+        borderBottomColor: '#F0F0F0',
+        marginBottom: 10,
       }}
       labelStyle={{
-        textTransform: 'none', // Prevents automatic uppercase
+        textTransform: 'none',
         fontFamily: fonts.semibold,
-        fontSize: 28,
+        fontSize: 16, // Adjusted font size
       }}
-      activeColor={colors.darkFont}
+      activeColor={colors.primary} // Blue when active
       inactiveColor={colors.grayFont}
-      tabStyle={{width: 'auto'}}
+      tabStyle={{width: 'auto', paddingHorizontal: 20}}
+      pressColor={'transparent'}
     />
   );
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <TopBar />
+      <TopBar title="Visits" />
       <View style={styles.tabArea}>
         <TabView
           navigationState={{index, routes}}
@@ -68,8 +74,9 @@ const styles = StyleSheet.create({
   },
   tabArea: {
     flex: 1,
-    paddingHorizontal: 16,
+    backgroundColor: '#F9FAFB',
+    paddingHorizontal: 0, // Removed padding to let tabs stretch full width
   },
 });
 
-export default Guests;
+export default Visits;

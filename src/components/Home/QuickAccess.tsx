@@ -1,46 +1,82 @@
-/* eslint-disable react-native/no-inline-styles */
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import React from 'react';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {
+  WrenchScrewdriverIcon,
+  ChatBubbleLeftRightIcon,
+  DocumentTextIcon,
+  EllipsisHorizontalIcon,
+} from 'react-native-heroicons/outline';
+import {PlusIcon as PlusIconSolid} from 'react-native-heroicons/solid';
 import colors from '../../themes/colors';
 import fonts from '../../themes/fonts';
-import UndrawVintage from '../../assets/images/undraw_vintage.svg';
-import UndrawFans from '../../assets/images/undraw_fans.svg';
 
 const QuickAccess = () => {
   const navigation = useNavigation();
 
-  const handleVisitsPress = () => {
-    // Navigate to Guests tab
+  const handleNewVisitPress = () => {
     navigation.navigate('ResidentGuests' as never);
   };
 
-  const handleVehiclesPress = () => {
-    // Navigate to Vehicles screen
-    navigation.navigate('ResidentVehicles' as never);
+  // Placeholders for other actions
+  const handlePress = (action: string) => {
+    console.log(`${action} pressed`);
   };
+
+  const actions = [
+    {
+      id: 1,
+      label: 'New Visit',
+      icon: <PlusIconSolid color="white" size={28} />,
+      onPress: handleNewVisitPress,
+      isPrimary: true,
+    },
+    {
+      id: 2,
+      label: 'Report',
+      icon: <WrenchScrewdriverIcon color={colors.grayFont} size={24} />,
+      onPress: () => handlePress('Report'),
+    },
+    {
+      id: 3,
+      label: 'Concierge',
+      icon: <ChatBubbleLeftRightIcon color={colors.grayFont} size={24} />,
+      onPress: () => handlePress('Concierge'),
+    },
+    {
+      id: 4,
+      label: 'Notices',
+      icon: <DocumentTextIcon color={colors.grayFont} size={24} />,
+      onPress: () => handlePress('Notices'),
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={[styles.item, {marginRight: 8}]}
-          activeOpacity={0.7}
-          onPress={handleVisitsPress}>
-          {/* @ts-ignore */}
-          <UndrawFans width={100} height={60} />
-          <Text style={styles.itemText}>Visits</Text>
-          <Text style={styles.itemSubText}>View & book visits</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Quick Actions</Text>
+        <TouchableOpacity>
+          <EllipsisHorizontalIcon color={colors.grayIconColor} size={24} />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.item, {marginLeft: 8}]}
-          activeOpacity={0.7}
-          onPress={handleVehiclesPress}>
-          {/* @ts-ignore */}
-          <UndrawVintage width={100} height={60} />
-          <Text style={styles.itemText}>Vehicles</Text>
-          <Text style={styles.itemSubText}>Register vehicles</Text>
-        </TouchableOpacity>
+      </View>
+
+      <View style={styles.actionsRow}>
+        {actions.map(action => (
+          <View key={action.id} style={styles.actionItem}>
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                action.isPrimary
+                  ? styles.primaryButton
+                  : styles.secondaryButton,
+              ]}
+              onPress={action.onPress}
+              activeOpacity={0.8}>
+              {action.icon}
+            </TouchableOpacity>
+            <Text style={styles.actionLabel}>{action.label}</Text>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -48,39 +84,56 @@ const QuickAccess = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    backgroundColor: colors.whiteBg,
+    paddingHorizontal: 20,
+    marginTop: 32, // Increased from 24
+    marginBottom: 20,
   },
-  item: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20, // Increased spacing
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: fonts.bold,
+    color: colors.darkFont,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  actionItem: {
+    alignItems: 'center',
+    width: 70, // Fixed width for alignment
+  },
+  iconButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.grayBg,
-    padding: 16,
-    borderRadius: 8,
+    marginBottom: 12, // Increased spacing
+    // Shadows
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  primaryButton: {
+    backgroundColor: colors.primary,
+  },
+  secondaryButton: {
+    backgroundColor: colors.whiteBg,
     borderWidth: 1,
-    borderColor: '#EFEFEF',
-    flex: 1,
+    borderColor: '#f8fafc',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  itemText: {
-    fontSize: 16,
+  actionLabel: {
+    fontSize: 14, // Increased font size
     fontFamily: fonts.semibold,
-    color: colors.darkFont,
-    marginTop: 8,
-  },
-  itemSubText: {
-    fontSize: 15,
-    fontFamily: fonts.regular,
     color: colors.grayFont,
-    marginTop: 4,
+    textAlign: 'center',
   },
 });
 

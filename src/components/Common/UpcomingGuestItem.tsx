@@ -2,8 +2,11 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import React, {useMemo} from 'react';
 import fonts from '../../themes/fonts';
 import colors from '../../themes/colors';
-import {format, isThisYear} from 'date-fns';
-import Icon from './Icon';
+import {format, isThisYear, isToday} from 'date-fns';
+import {
+  TruckIcon,
+  UserIcon,
+} from 'react-native-heroicons/outline';
 
 interface Guest {
   id: string;
@@ -12,6 +15,7 @@ interface Guest {
   purpose: string;
   vehiclePlate: string;
   status: string;
+  code?: string; // Add code if available in your Guest interface
 }
 
 interface UpcomingGuestItemProps {
@@ -21,116 +25,186 @@ interface UpcomingGuestItemProps {
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  const time = format(date, 'HH:mm');
+  const time = format(date, 'h:mm a'); // 2:00 PM format
+
+  if (isToday(date)) {
+    return `Scheduled ${time}`;
+  }
 
   // If it's this year, don't show the year
   if (isThisYear(date)) {
-    return `${format(date, 'do MMM')} · ${time}`; // e.g., "1st Jun · 12:28"
+    return `${format(date, 'MMM do')} · ${time}`;
   }
 
-  return `${format(date, 'dd MMM yyyy')} · ${time}`; // e.g., "13 May 2022 · 13:30"
+  return `${format(date, 'MMM dd yyyy')} · ${time}`;
 };
 
 const UpcomingGuestItem: React.FC<UpcomingGuestItemProps> = ({
   guest,
   onPressItem,
 }) => {
-  const [iconColor, iconBgColor, iconName] = useMemo(() => {
+  const [statusColor, statusBgColor, statusText] = useMemo(() => {
     if (guest.status === 'pending') {
-      return [colors.grayIconColor, colors.grayBg, 'calendar-plus'];
+      return ['#0A7FF2', '#E6F2FE', 'Active']; // Blue for active/pending
     }
     if (guest.status === 'arrived') {
-      return [colors.grayIconColor, colors.grayBg, 'sign-in-alt'];
+      return ['#22C55E', '#DCFCE7', 'Arrived']; // Green
     }
     if (guest.status === 'cancelled') {
-      return ['#F44336', '#FFEBEE', 'ban'];
+      return ['#EF4444', '#FEE2E2', 'Cancelled']; // Red
     }
-    if (guest.status === 'departed') {
-      return ['#4CAF50', '#E8F5E8', 'sign-out-alt'];
+    return ['#6B7280', '#F3F4F6', 'Inactive']; // Gray default
+  }, [guest.status]);
+
+  const renderIcon = () => {
+    // Basic logic to differentiate delivery vs person
+    // You might want a more robust way to check this (e.g. guestType field)
+    if (guest.purpose.toLowerCase().includes('delivery')) {
+      return <TruckIcon size={24} color={'#0A7FF2'} />;
     }
-    return ['#9E9E9E', '#F5F5F5', 'calendar-plus'];
-  }, [guest]);
+    return <UserIcon size={24} color={'#0A7FF2'} />;
+  };
+
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={styles.card}
+      activeOpacity={0.9}
       onPress={() => onPressItem(guest.id)}>
-      <View style={styles.left}>
-        <View style={[styles.avatar, {backgroundColor: iconBgColor}]}>
-          <Icon name={iconName} size={22} color={iconColor} />
+      
+      {/* Top Row: Icon, Name/Time, Status Badge */}
+      <View style={styles.topRow}>
+        <View style={styles.iconContainer}>
+          {renderIcon()}
         </View>
-        <View style={styles.details}>
-          <Text style={styles.date}>{formatDate(guest.date)}</Text>
+        
+        <View style={styles.infoContainer}>
           <Text style={styles.name}>{guest.name}</Text>
-          <Text style={styles.purpose}>{guest.purpose}</Text>
+          <Text style={styles.date}>{formatDate(guest.date)}</Text>
+        </View>
+
+        <View style={[styles.statusBadge, {backgroundColor: statusBgColor}]}>
+            <View style={[styles.statusDot, {backgroundColor: statusColor}]} />
+            <Text style={[styles.statusText, {color: statusColor}]}>{statusText}</Text>
         </View>
       </View>
-      <View style={styles.right}>
-        <View style={styles.plateContainer}>
-          <Text style={styles.vehiclePlate}>
-            {guest.vehiclePlate && guest.vehiclePlate.trim()
-              ? guest.vehiclePlate.toUpperCase()
-              : 'No Vehicle'}
-          </Text>
+
+      <View style={styles.divider} />
+
+      {/* Bottom Row: User Avatar/Name, Code */}
+      <View style={styles.bottomRow}>
+        <View style={styles.userContainer}>
+            <View style={styles.userAvatar}>
+                <UserIcon size={12} color="#9CA3AF" />
+            </View>
+            {/* Placeholder for "Created by" user, usually current user for resident app */}
+            <Text style={styles.userName}>Me</Text> 
         </View>
+        
+        {/* Mock code for now if not present in guest object */}
+        <Text style={styles.codeText}>CODE: <Text style={styles.codeValue}>8829</Text></Text>
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    justifyContent: 'space-between',
+  card: {
+    backgroundColor: colors.whiteBg,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    // Shadow
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
-  left: {
+  topRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
-  avatar: {
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#EFF6FF', // Light blue bg
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    height: 45,
-    width: 45,
-    borderRadius: 20,
+    marginRight: 12,
   },
-  details: {
-    flexDirection: 'column',
-    marginLeft: 16,
-  },
-  date: {
-    fontSize: 15,
-    fontFamily: fonts.regular,
-    color: colors.grayFont,
-    marginBottom: 4,
+  infoContainer: {
+    flex: 1,
+    justifyContent: 'center',
   },
   name: {
-    fontSize: 17,
-    fontFamily: fonts.semibold,
+    fontSize: 16,
+    fontFamily: fonts.bold,
     color: colors.darkFont,
     marginBottom: 4,
-    textTransform: 'capitalize',
   },
-  purpose: {
-    fontSize: 16,
-    fontFamily: fonts.regular,
-    color: colors.grayFont,
-    textTransform: 'capitalize',
-  },
-  vehiclePlate: {
-    fontSize: 15,
+  date: {
+    fontSize: 14,
     fontFamily: fonts.regular,
     color: colors.grayFont,
   },
-  right: {
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 12,
+    fontFamily: fonts.semibold,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+    marginBottom: 12,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  plateContainer: {
-    backgroundColor: colors.grayBg,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+  userContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  userName: {
+    fontSize: 14,
+    fontFamily: fonts.regular,
+    color: colors.grayFont,
+  },
+  codeText: {
+    fontSize: 12,
+    fontFamily: fonts.bold,
+    color: '#9CA3AF',
+    letterSpacing: 0.5,
+  },
+  codeValue: {
+    color: colors.darkFont,
+    fontSize: 14,
   },
 });
 

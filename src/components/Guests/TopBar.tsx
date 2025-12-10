@@ -4,8 +4,13 @@ import colors from '../../themes/colors';
 import fonts from '../../themes/fonts';
 import Icon from '../Common/Icon';
 import {useNavigation} from '@react-navigation/native';
+import {PlusIcon} from 'react-native-heroicons/solid';
 
-const TopBar = () => {
+interface TopBarProps {
+  title?: string;
+}
+
+const TopBar = ({title = 'Guests'}: TopBarProps) => {
   const navigation = useNavigation();
 
   const handleAddGuest = () => {
@@ -14,10 +19,10 @@ const TopBar = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Guests</Text>
+      <Text style={styles.title}>{title}</Text>
 
       <TouchableOpacity style={styles.addButton} onPress={handleAddGuest}>
-        <Icon name="plus" size={24} color={colors.darkFont} />
+        <PlusIcon size={24} color={colors.whiteBg} />
       </TouchableOpacity>
     </View>
   );
@@ -31,29 +36,27 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     paddingTop: 16,
     paddingBottom: 8,
-    paddingHorizontal: 0,
+    paddingHorizontal: 16, // Consistent padding
     backgroundColor: colors.whiteBg,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28, // Increased size
     fontFamily: fonts.bold,
     color: colors.darkFont,
-    marginLeft: 16,
   },
   addButton: {
-    // padding: 0,
-    // paddingRight: 16,
-    // paddingLeft: 16,
-    // paddingVertical: 10,
-    // backgroundColor: 'red',
-
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    width: 44, // Slightly larger
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primary, // Blue background
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    // Shadow for blue button
+    shadowColor: colors.primary,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });
 

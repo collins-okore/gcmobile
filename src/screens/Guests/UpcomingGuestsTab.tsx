@@ -16,8 +16,6 @@ import residentGuestService, {
 } from '../../services/residentGuestService';
 import {normalize} from '../../lib/normalize';
 
-const ItemSeparator = () => <View style={styles.separator} />;
-
 const UpcomingGuestsTab = () => {
   const navigation = useNavigation();
   const [guests, setGuests] = useState<ResidentGuest[]>([]);
@@ -117,7 +115,7 @@ const UpcomingGuestsTab = () => {
           />
         )}
         keyExtractor={item => item.id}
-        ItemSeparatorComponent={ItemSeparator}
+        // ItemSeparatorComponent={ItemSeparator} // Removed separator as cards have margin
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -136,20 +134,27 @@ const UpcomingGuestsTab = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.whiteBg,
+    backgroundColor: '#F9FAFB', // Light gray background for card contrast
   },
-  separator: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#EFEFEF',
+  sectionTitle: {
+    fontSize: 12,
+    fontFamily: fonts.bold,
+    color: colors.grayFont,
+    letterSpacing: 1,
+    marginLeft: 20, // Align with cards which have padding/margin
+    marginTop: 20,
+    marginBottom: 10,
+    textTransform: 'uppercase',
   },
   listContent: {
-    paddingHorizontal: 2,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.whiteBg,
+    backgroundColor: '#F9FAFB',
   },
   loadingText: {
     marginTop: 16,
@@ -161,7 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.whiteBg,
+    backgroundColor: '#F9FAFB',
     paddingHorizontal: 32,
   },
   errorText: {
@@ -174,7 +179,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.whiteBg,
+    backgroundColor: '#F9FAFB',
   },
   emptyText: {
     fontSize: 16,
