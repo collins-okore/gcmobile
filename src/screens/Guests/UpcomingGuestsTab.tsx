@@ -104,9 +104,10 @@ const UpcomingGuestsTab = () => {
     <View style={styles.container}>
       <FlatList
         data={transformedGuests}
-        renderItem={({item}) => (
+        renderItem={({item, index}) => (
           <UpcomingGuestItem
             guest={item}
+            index={index}
             onPressItem={() => {
               (navigation as any).navigate('ViewResidentGuest', {
                 guestId: item.id,
@@ -135,16 +136,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB', // Light gray background for card contrast
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontFamily: fonts.bold,
-    color: colors.grayFont,
-    letterSpacing: 1,
-    marginLeft: 20, // Align with cards which have padding/margin
-    marginTop: 20,
-    marginBottom: 10,
-    textTransform: 'uppercase',
   },
   listContent: {
     paddingHorizontal: 20,

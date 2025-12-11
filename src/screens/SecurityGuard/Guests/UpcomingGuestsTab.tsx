@@ -32,17 +32,12 @@ const UpcomingGuestsTab = () => {
       setError(null);
 
       const response = await securityGuardGuestService.getAllGuests({
-        populate: ['resident'],
         filters: {
           status: {
             $in: ['pending', 'arrived'], // Only upcoming guests
           },
         },
         sort: ['updatedAt:desc'],
-        pagination: {
-          page: 1,
-          pageSize: 100,
-        },
       });
 
       setGuests(normalize(response.data));
@@ -74,10 +69,6 @@ const UpcomingGuestsTab = () => {
   // Transform guest data to match UpcomingGuestItem expected format
   const transformedGuests = guests.map(guest => ({
     ...guest,
-    id: guest.id,
-    name: guest.name,
-    date: guest.arrivalTime,
-    purpose: guest.purpose,
     vehiclePlate: guest.vehicleLicensePlate || 'N/A',
   }));
 
@@ -110,10 +101,11 @@ const UpcomingGuestsTab = () => {
     <View style={styles.container}>
       <FlatList
         data={transformedGuests}
-        renderItem={({item}) => {
+        renderItem={({item, index}) => {
           return (
             <UpcomingGuestItem
               guest={item}
+              index={index}
               onPressItem={() => {
                 (navigation as any).navigate('ViewSecurityGuardGuest', {
                   guestId: item.id,
@@ -149,7 +141,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#EFEFEF',
   },
   listContent: {
-    paddingHorizontal: 2,
+    paddingHorizontal: 16,
   },
   loadingContainer: {
     flex: 1,

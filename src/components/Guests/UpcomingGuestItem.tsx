@@ -9,6 +9,7 @@ import Icon from '../Common/Icon';
 interface UpcomingGuestItemProps {
   guest: SecurityGuardGuest;
   onPressItem: (guestId: string) => void;
+  index?: number;
 }
 
 const formatDate = (dateString: string) => {
@@ -26,6 +27,7 @@ const formatDate = (dateString: string) => {
 const UpcomingGuestItem: React.FC<UpcomingGuestItemProps> = ({
   guest,
   onPressItem,
+  index,
 }) => {
   const [iconColor, iconBgColor, iconName] = useMemo(() => {
     if (guest.status === 'pending') {
@@ -42,9 +44,15 @@ const UpcomingGuestItem: React.FC<UpcomingGuestItemProps> = ({
     }
     return ['#9E9E9E', '#F5F5F5', 'clock'];
   }, [guest]);
+
+  const containerStyle = [
+    styles.container,
+    index === 0 && {paddingTop: 24}, // Extra padding for the first item
+  ];
+
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={containerStyle}
       onPress={() => onPressItem(guest.id)}>
       <View style={styles.left}>
         <View style={[styles.avatar, {backgroundColor: iconBgColor}]}>

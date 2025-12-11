@@ -16,8 +16,6 @@ import residentGuestService, {
 } from '../../services/residentGuestService';
 import {normalize} from '../../lib/normalize';
 
-const ItemSeparator = () => <View style={styles.separator} />;
-
 const PastGuestTab = () => {
   const navigation = useNavigation();
   const [pastGuests, setPastGuests] = useState<ResidentGuest[]>([]);
@@ -109,9 +107,10 @@ const PastGuestTab = () => {
     <View style={styles.container}>
       <FlatList
         data={transformedData}
-        renderItem={({item}) => (
+        renderItem={({item, index}) => (
           <PastGuestItem
             guest={item}
+            index={index}
             onPressItem={() => {
               (navigation as any).navigate('ViewResidentGuest', {
                 guestId: item.id,
@@ -120,7 +119,6 @@ const PastGuestTab = () => {
           />
         )}
         keyExtractor={item => item.id}
-        ItemSeparatorComponent={ItemSeparator}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -139,20 +137,17 @@ const PastGuestTab = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.whiteBg,
-  },
-  separator: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#EFEFEF',
+    backgroundColor: '#F9FAFB',
   },
   listContent: {
-    paddingHorizontal: 2,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.whiteBg,
+    backgroundColor: '#F9FAFB',
     paddingHorizontal: 16,
   },
   loadingText: {

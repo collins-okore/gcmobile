@@ -3,10 +3,7 @@ import React, {useMemo} from 'react';
 import fonts from '../../themes/fonts';
 import colors from '../../themes/colors';
 import {format, isThisYear, isToday} from 'date-fns';
-import {
-  TruckIcon,
-  UserIcon,
-} from 'react-native-heroicons/outline';
+import {TruckIcon, UserIcon} from 'react-native-heroicons/outline';
 
 interface Guest {
   id: string;
@@ -21,6 +18,7 @@ interface Guest {
 interface UpcomingGuestItemProps {
   guest: Guest;
   onPressItem: (guestId: string) => void;
+  index: number;
 }
 
 const formatDate = (dateString: string) => {
@@ -42,6 +40,7 @@ const formatDate = (dateString: string) => {
 const UpcomingGuestItem: React.FC<UpcomingGuestItemProps> = ({
   guest,
   onPressItem,
+  index,
 }) => {
   const [statusColor, statusBgColor, statusText] = useMemo(() => {
     if (guest.status === 'pending') {
@@ -66,48 +65,60 @@ const UpcomingGuestItem: React.FC<UpcomingGuestItemProps> = ({
   };
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.9}
-      onPress={() => onPressItem(guest.id)}>
-      
-      {/* Top Row: Icon, Name/Time, Status Badge */}
-      <View style={styles.topRow}>
-        <View style={styles.iconContainer}>
-          {renderIcon()}
-        </View>
-        
-        <View style={styles.infoContainer}>
-          <Text style={styles.name}>{guest.name}</Text>
-          <Text style={styles.date}>{formatDate(guest.date)}</Text>
-        </View>
+    <View style={index === 0 ? styles.firstItemContainer : undefined}>
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.9}
+        onPress={() => onPressItem(guest.id)}>
+        {/* Top Row: Icon, Name/Time, Status Badge */}
+        <View style={styles.topRow}>
+          <View style={styles.iconContainer}>{renderIcon()}</View>
 
-        <View style={[styles.statusBadge, {backgroundColor: statusBgColor}]}>
+          <View style={styles.infoContainer}>
+            <Text style={styles.name}>{guest.name}</Text>
+            <Text style={styles.date}>{formatDate(guest.date)}</Text>
+          </View>
+
+          <View style={[styles.statusBadge, {backgroundColor: statusBgColor}]}>
             <View style={[styles.statusDot, {backgroundColor: statusColor}]} />
-            <Text style={[styles.statusText, {color: statusColor}]}>{statusText}</Text>
+            <Text style={[styles.statusText, {color: statusColor}]}>
+              {statusText}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.divider} />
+        <View style={styles.divider} />
 
-      {/* Bottom Row: User Avatar/Name, Code */}
-      <View style={styles.bottomRow}>
-        <View style={styles.userContainer}>
-            <View style={styles.userAvatar}>
-                <UserIcon size={12} color="#9CA3AF" />
-            </View>
+        {/* Bottom Row: User Avatar/Name, Code */}
+        <View style={styles.bottomRow}>
+          <View style={styles.userContainer}>
+            {/* <View style={styles.userAvatar}>
+              <UserIcon size={12} color="#9CA3AF" />
+            </View> */}
             {/* Placeholder for "Created by" user, usually current user for resident app */}
-            <Text style={styles.userName}>Me</Text> 
+            <Text style={styles.codeText}>{guest.purpose}</Text>
+          </View>
+
+          {/* Mock code for now if not present in guest object */}
+          {/* <Text style={styles.codeText}>CODE: 8829</Text> */}
         </View>
-        
-        {/* Mock code for now if not present in guest object */}
-        <Text style={styles.codeText}>CODE: <Text style={styles.codeValue}>8829</Text></Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  firstItemContainer: {
+    paddingTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontFamily: fonts.bold,
+    color: colors.grayFont,
+    letterSpacing: 1,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+  },
   card: {
     backgroundColor: colors.whiteBg,
     borderRadius: 16,
@@ -132,6 +143,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     backgroundColor: '#EFF6FF', // Light blue bg
+    borderWidth: 1,
+    borderColor: 'rgb(219, 234, 254)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -141,15 +154,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   name: {
-    fontSize: 16,
-    fontFamily: fonts.bold,
-    color: colors.darkFont,
+    fontSize: 17,
+    fontFamily: fonts.semibold,
+    color: 'rgb(15 23 42)',
     marginBottom: 4,
   },
   date: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: fonts.regular,
-    color: colors.grayFont,
+    color: 'rgb(100, 116, 139)',
   },
   statusBadge: {
     flexDirection: 'row',
@@ -157,6 +170,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgb(219, 234, 254)',
   },
   statusDot: {
     width: 6,
@@ -201,6 +216,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     color: '#9CA3AF',
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   codeValue: {
     color: colors.darkFont,

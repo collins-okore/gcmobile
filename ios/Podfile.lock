@@ -1786,7 +1786,7 @@ PODS:
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNPermissions (5.4.1):
+  - RNPermissions (5.4.4):
     - React-Core
   - RNScreens (4.11.1):
     - DoubleConversion
@@ -1840,6 +1840,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - SocketRocket (0.7.1)
+  - SRSRadialGradient (1.2.1):
+    - React
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -1927,6 +1929,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - SRSRadialGradient (from `../node_modules/react-native-radial-gradient`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2109,6 +2112,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  SRSRadialGradient:
+    :path: "../node_modules/react-native-radial-gradient"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2201,11 +2206,12 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
   RNFBApp: 90cf0209fb8f0460ab069a7de857d7ec851c8476
   RNFBMessaging: 37dd861b8600ec2ae9a06ba42ae4285cb707a731
-  RNPermissions: 6ead05819bf93e267530b9a0ea5f9898e4a25a56
+  RNPermissions: 0a051d57fff27e15c87fb73e55a8ae7a5a62cc86
   RNScreens: 7f9d84a9901679dbb435592612d5ac57a044adce
   RNSVG: 4d6e9f0087980e36e14e1739b9c1760e63de5b8c
   RNVectorIcons: d111d680b1629da748b7c40de18a246d9d585aab
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  SRSRadialGradient: f93406612258ab93e454aa08b9f82d3bb7adf6c1
   Yoga: 50518ade05048235d91a78b803336dbb5b159d5d
 
 PODFILE CHECKSUM: df4fad8c0dacfffbd96175696469e1f01f76e007

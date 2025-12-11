@@ -2,7 +2,6 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import React from 'react';
 import colors from '../../themes/colors';
 import fonts from '../../themes/fonts';
-import Icon from '../Common/Icon';
 import {useNavigation} from '@react-navigation/native';
 import {PlusIcon} from 'react-native-heroicons/solid';
 
@@ -35,7 +34,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignContent: 'center',
     paddingTop: 16,
-    paddingBottom: 8,
+    paddingBottom: 12,
     paddingHorizontal: 16, // Consistent padding
     backgroundColor: colors.whiteBg,
   },

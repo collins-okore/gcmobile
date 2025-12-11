@@ -2,8 +2,8 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import React, {useMemo} from 'react';
 import fonts from '../../themes/fonts';
 import colors from '../../themes/colors';
-import {format, isThisYear} from 'date-fns';
-import Icon from './Icon';
+import {format, isThisYear, isToday} from 'date-fns';
+import {TruckIcon, UserIcon} from 'react-native-heroicons/outline';
 
 interface Guest {
   id: string;
@@ -17,118 +17,172 @@ interface Guest {
 interface PastGuestItemProps {
   guest: Guest;
   onPressItem: (guestId: string) => void;
+  index: number;
 }
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  const time = format(date, 'HH:mm');
+  const time = format(date, 'h:mm a'); // 12-hour format
+
+  if (isToday(date)) {
+    return `Today · ${time}`;
+  }
 
   // If it's this year, don't show the year
   if (isThisYear(date)) {
-    return `${format(date, 'do MMM')} · ${time}`; // e.g., "1st Jun · 12:28"
+    return `${format(date, 'MMM do')} · ${time}`;
   }
 
-  return `${format(date, 'dd MMM yyyy')} · ${time}`; // e.g., "13 May 2022 · 13:30"
+  return `${format(date, 'MMM dd yyyy')} · ${time}`;
 };
 
-const PastGuestItem: React.FC<PastGuestItemProps> = ({guest, onPressItem}) => {
-  const [iconColor, iconBgColor, iconName] = useMemo(() => {
+const PastGuestItem: React.FC<PastGuestItemProps> = ({
+  guest,
+  onPressItem,
+  index,
+}) => {
+  const [statusColor, statusBgColor, statusText] = useMemo(() => {
     if (guest.status === 'pending') {
-      return [colors.grayIconColor, colors.grayBg, 'calendar-plus'];
+      return ['#6B7280', '#E5E7EB', 'Scheduled'];
     }
     if (guest.status === 'arrived') {
-      return [colors.grayIconColor, colors.grayBg, 'sign-in-alt'];
+      return ['#22C55E', '#DCFCE7', 'Arrived'];
     }
     if (guest.status === 'cancelled') {
-      return [colors.grayIconColor, colors.grayBg, 'ban'];
+      return ['#EF4444', '#FEE2E2', 'Cancelled'];
     }
     if (guest.status === 'departed') {
-      return [colors.grayIconColor, colors.grayBg, 'sign-out-alt'];
+      return ['#6B7280', '#E5E7EB', 'Departed'];
     }
-    return ['#9E9E9E', '#F5F5F5', 'calendar-plus'];
-  }, [guest]);
+    return ['#6B7280', '#E5E7EB', 'Completed'];
+  }, [guest.status]);
+
+  const renderIcon = () => {
+    if (guest.purpose.toLowerCase().includes('delivery')) {
+      return <TruckIcon size={24} color={'#6B7280'} />;
+    }
+    return <UserIcon size={24} color={'#6B7280'} />;
+  };
 
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={() => onPressItem(guest.id)}>
-      <View style={styles.left}>
-        <View style={[styles.avatar, {backgroundColor: iconBgColor}]}>
-          <Icon name={iconName} size={22} color={iconColor} />
+    <View style={index === 0 ? styles.firstItemContainer : undefined}>
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.9}
+        onPress={() => onPressItem(guest.id)}>
+        {/* Top Row: Icon, Name/Time, Status Badge */}
+        <View style={styles.topRow}>
+          <View style={styles.iconContainer}>{renderIcon()}</View>
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.name}>{guest.name}</Text>
+            <Text style={styles.date}>{formatDate(guest.date)}</Text>
+          </View>
+
+          <View style={[styles.statusBadge, {backgroundColor: statusBgColor}]}>
+            <View style={[styles.statusDot, {backgroundColor: statusColor}]} />
+            <Text style={[styles.statusText, {color: statusColor}]}>
+              {statusText}
+            </Text>
+          </View>
         </View>
-        <View style={styles.details}>
-          <Text style={styles.date}>{formatDate(guest.date)}</Text>
-          <Text style={styles.name}>{guest.name}</Text>
+
+        <View style={styles.divider} />
+
+        {/* Bottom Row: Purpose and Vehicle plate chip */}
+        <View style={styles.bottomRow}>
           <Text style={styles.purpose}>{guest.purpose}</Text>
         </View>
-      </View>
-      <View style={styles.right}>
-        <View style={styles.plateContainer}>
-          <Text style={styles.vehiclePlate}>
-            {guest.vehiclePlate && guest.vehiclePlate.trim()
-              ? guest.vehiclePlate.toUpperCase()
-              : 'No Vehicle'}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    justifyContent: 'space-between',
+  firstItemContainer: {
+    paddingTop: 8,
   },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  card: {
+    backgroundColor: colors.whiteBg,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    // Shadow
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
-  avatar: {
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: 'rgb(229, 231, 235)',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    height: 45,
-    width: 45,
-    borderRadius: 20,
+    marginRight: 12,
   },
-  details: {
-    flexDirection: 'column',
-    marginLeft: 16,
-  },
-  date: {
-    fontSize: 15,
-    fontFamily: fonts.regular,
-    color: colors.grayFont,
-    marginBottom: 4,
+  infoContainer: {
+    flex: 1,
+    justifyContent: 'center',
   },
   name: {
     fontSize: 17,
     fontFamily: fonts.semibold,
-    color: colors.darkFont,
+    color: 'rgb(15 23 42)',
     marginBottom: 4,
     textTransform: 'capitalize',
   },
-  purpose: {
-    fontSize: 16,
-    fontFamily: fonts.regular,
-    color: colors.grayFont,
-    textTransform: 'capitalize',
-  },
-  vehiclePlate: {
+  date: {
     fontSize: 15,
     fontFamily: fonts.regular,
-    color: colors.grayFont,
+    color: 'rgb(100, 116, 139)',
   },
-  right: {
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgb(229, 231, 235)',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 12,
+    fontFamily: fonts.semibold,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+    marginBottom: 12,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  plateContainer: {
-    backgroundColor: colors.grayBg,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+  purpose: {
+    fontSize: 12,
+    fontFamily: fonts.bold,
+    color: '#9CA3AF',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 });
 
