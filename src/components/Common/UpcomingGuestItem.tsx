@@ -131,7 +131,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#EFF6FF', //'rgb(219, 234, 254)',
+    // borderColor:'#F3F4F6',
   },
   topRow: {
     flexDirection: 'row',

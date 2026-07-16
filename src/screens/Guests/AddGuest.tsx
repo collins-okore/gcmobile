@@ -233,7 +233,7 @@ const AddGuest = () => {
         scrollEventThrottle={16}>
         <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
           <View style={styles.header}>
-            <Text style={styles.title}>Add Guest</Text>
+            <Text style={styles.title}>New Visit</Text>
             <Text style={styles.subtitle}>
               Register your guest by filling out their details.
             </Text>
@@ -351,7 +351,7 @@ const AddGuest = () => {
       <SafeAreaView style={styles.buttonSafeArea} edges={['bottom']}>
         <View style={styles.buttonContainer}>
           <Button
-            title="Add Guest"
+            title="Generate Pass"
             onPress={handleAddGuest}
             loading={isLoading}
             disabled={isLoading}
